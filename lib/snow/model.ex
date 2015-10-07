@@ -158,7 +158,7 @@ defmodule Snow.Model do
   base64 = [ue_px: :unstruct_event,
             cx: :context]
 
-  defstruct Enum.map(fields, fn({key, _}) -> {key, nil} end) ++ [__structs__: []]
+  defstruct Enum.map(fields, fn({key, _}) -> {key, nil} end)
 
   def from_string(qs) do
     qs
@@ -197,8 +197,14 @@ defmodule Snow.Model do
 
   ## base64
   for {from, to} <- base64 do
-    defp map({unquote(from), value}, acc) do
-      %{acc | unquote(to) => Base.decode64!(value)}
+    defp map({unquote(to_string(from)), value}, acc) do
+      value = case byte_size(value) |> rem(4) do
+        0 -> value
+        1 -> value <> "==="
+        2 -> value <> "=="
+        3 -> value <> "="
+      end
+      %{acc | unquote(to) => Base.url_decode64!(value)}
     end
   end
 
