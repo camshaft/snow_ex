@@ -57,6 +57,10 @@ defmodule Snow.Parser.Cloudfront do
       parse(buffer, acc)
   end
 
+  defp parse_line(<<"#", b :: binary>>) do
+    {_, b} = consume_nl(b)
+    throw {:pass, b}
+  end
   defp parse_line(b) do
     {date, b} = consume_tab(b)
     {time, b} = consume_tab(b)
@@ -90,10 +94,29 @@ defmodule Snow.Parser.Cloudfront do
     |> Map.put_new(:page_url, cs_referer)
     |> Map.put_new(:useragent, cs_user_agent)
     |> Map.merge(%{v_collector: "cf",
-                   collector_tstamp: 0, ## TODO
+                   collector_tstamp: parse_tstamp(date, time),
                    user_ipaddress: c_ip})
 
     {model, b}
+  end
+
+  def parse_tstamp(date, time) do
+    time = {parse_date(date), parse_time(time)}
+    |> :calendar.datetime_to_gregorian_seconds()
+    |> - 62167219200
+    time * 1000
+  end
+
+  defp parse_date(<<year :: size(4)-binary, "-", month :: size(2)-binary, "-", day :: size(2)-binary>>) do
+    {String.to_integer(year),
+     String.to_integer(month),
+     String.to_integer(day)}
+  end
+
+  defp parse_time(<<hour :: size(2)-binary, ":", minute :: size(2)-binary, ":", second :: size(2)-binary>>) do
+    {String.to_integer(hour),
+     String.to_integer(minute),
+     String.to_integer(second)}
   end
 
   for i <- 1..5_000 do

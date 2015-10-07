@@ -9,9 +9,17 @@ defmodule Zlib do
         {stream, z, nil}
       end,
       &handle_deflate/1,
-      fn ({_, z, :finished}) ->
-        :ok = :zlib.deflateEnd(z)
-        :zlib.close(z)
+      fn
+        ({_, z, :finished}) ->
+          :ok = :zlib.deflateEnd(z)
+          :zlib.close(z)
+        ({_, z, _}) ->
+          try do
+            :zlib.close(z)
+          catch
+            _, _ ->
+              :ok
+          end
       end
     )
   end
