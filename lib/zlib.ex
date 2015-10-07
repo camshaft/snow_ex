@@ -41,16 +41,27 @@ defmodule Zlib do
   defp next(nil) do
     {:done, nil}
   end
+  defp next({:cont, reducer}) when is_function(reducer) do
+    {:cont, []}
+    |> reducer.()
+    |> wrap_cont()
+  end
   defp next(reducer) when is_function(reducer) do
-    case :erlang.fun_info(reducer, :arity) do
-      {_, 1} ->
-        reducer.({:cont, []})
-      {_, 2} ->
-        reducer.({:cont, []}, fn(value, _) -> {:suspend, value} end)
-    end
+    {:cont, []}
+    |> reducer.(fn(value, _) -> {:suspend, value} end)
+    |> wrap_cont()
   end
   defp next(stream) do
-    Enumerable.reduce(stream, {:cont, []}, fn(value, _) -> {:suspend, value} end)
+    stream
+    |> Enumerable.reduce({:cont, []}, fn(value, _) -> {:suspend, value} end)
+    |> wrap_cont()
+  end
+
+  defp wrap_cont({:suspended, value, stream}) do
+    {:suspended, value, {:cont, stream}}
+  end
+  defp wrap_cont(other) do
+    other
   end
 
   defp handle_deflate({stream, z, :finished}) do
@@ -82,15 +93,11 @@ defmodule Zlib do
         {o, {stream, z, :finished, buffer}}
       {:suspended, chunk, stream} ->
         {o, buffer} = inflate_chunk(z, chunk, buffer)
-        IO.inspect :erlang.iolist_size(buffer)
         {o, {stream, z, mode, buffer}}
     end
   end
 
   defp inflate_chunk(z, chunk, buffer) do
     {:zlib.inflate(z, [chunk, buffer]), []}
-  catch
-    e, :data_error ->
-      {[], [chunk, buffer]}
   end
 end

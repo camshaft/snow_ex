@@ -206,9 +206,17 @@ defmodule Snow.Model do
     acc
   end
 
-  defimpl String.Chars, for: Snow.Model do
-    def to_string(model) do
-      ["", ["", ["", ["foo"]]]]
+  defimpl Poison.Encoder, for: Snow.Model do
+    def encode(model, options) do
+      :maps.fold(fn
+        (_, nil, acc) ->
+          acc
+        (k, v, acc) when k in unquote(Enum.map(fields, &(elem(&1, 0)))) ->
+          Map.put(acc, k, v)
+        (_, _, acc) ->
+          acc
+      end, %{}, model)
+      |> Poison.encode!(options)
     end
   end
 end

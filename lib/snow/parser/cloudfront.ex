@@ -14,11 +14,27 @@ defmodule Snow.Parser.Cloudfront do
   defp next(nil) do
     {:done, nil}
   end
+  defp next({:cont, reducer}) when is_function(reducer) do
+    {:cont, []}
+    |> reducer.()
+    |> wrap_cont()
+  end
   defp next(reducer) when is_function(reducer) do
-    reducer.({:cont, []})
+    {:cont, []}
+    |> reducer.(fn(value, _) -> {:suspend, value} end)
+    |> wrap_cont()
   end
   defp next(stream) do
-    Enumerable.reduce(stream, {:cont, []}, fn(value, _) -> {:suspend, value} end)
+    stream
+    |> Enumerable.reduce({:cont, []}, fn(value, _) -> {:suspend, value} end)
+    |> wrap_cont()
+  end
+
+  defp wrap_cont({:suspended, value, stream}) do
+    {:suspended, value, {:cont, stream}}
+  end
+  defp wrap_cont(other) do
+    other
   end
 
   defp handle({stream, buffer}) do
