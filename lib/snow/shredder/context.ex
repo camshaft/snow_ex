@@ -1,11 +1,11 @@
-defmodule Snow.Shredder.Unstructured do
+defmodule Snow.Shredder.Context do
   @derives [Poison.Encoder]
 
   defstruct schema: %{},
             hierarchy: %{},
             data: %{}
 
-  @unstruct_event "iglu:com.snowplowanalytics.snowplow/unstruct_event/jsonschema/1"
+  @context "iglu:com.snowplowanalytics.snowplow/contexts/jsonschema/1"
 
   def exec(stream, schemas \\ %{}) do
     stream
@@ -14,22 +14,24 @@ defmodule Snow.Shredder.Unstructured do
     end)
   end
 
-  defp shred(%{unstruct_event: nil}, _) do
+  defp shred(%{context: nil}, _) do
     []
   end
-  defp shred(model = %{unstruct_event: json}, schemas) when is_binary(json) do
-    shred(%{model | unstruct_event: Poison.decode!(json)}, schemas)
+  defp shred(model = %{context: json}, schemas) when is_binary(json) do
+    shred(%{model | context: Poison.decode!(json)}, schemas)
   end
-  defp shred(model = %{unstruct_event: %{"schema" => @unstruct_event <> _, "data" => data}}, schemas) do
-    shred(%{model | unstruct_event: data}, schemas)
+  defp shred(model = %{context: %{"schema" => @context <> _, "data" => contexts}}, schemas) do
+    shred(%{model | context: contexts}, schemas)
   end
-  defp shred(model = %{unstruct_event: %{"schema" => schema}}, schemas) do
-    case Dict.fetch(schemas, schema) do
-      {:ok, schema} ->
-        format(model, schema)
-      :error ->
-        [error(model, schema)]
-    end
+  defp shred(model = %{context: contexts}, schemas) when is_list(contexts) do
+    Enum.reduce(contexts, [], fn(%{"schema" => schema}, acc) ->
+      case Dict.fetch(schemas, schema) do
+        {:ok, schema} ->
+          format(model, schema) ++ acc
+        :error ->
+          [error(model, schema) | acc]
+      end
+    end)
   end
 
   defp format(event = %{unstruct_event: unstruct_event}, %{"self" => schema}) do
