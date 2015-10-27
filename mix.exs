@@ -11,15 +11,22 @@ defmodule Snow.Mixfile do
   end
 
   def application do
-    [applications: [:logger,
-                    :httpoison]]
+    [applications: [:geolix,
+                    :httpoison,
+                    :logger,
+                    :ref_inspector,
+                    :ua_inspector,
+                    :yamerl]]
   end
 
   defp deps do
     [
-      # {:httpoison, "~> 0.7.2"}
-      {:httpoison, github: "edgurgel/httpoison", ref: "49ac32fa3f424b20749d55e86cffc37d55efc00a"},
-      {:poison, "~> 1.5.0"}
+      { :geolix, "~> 0.8" },
+      { :httpoison, github: "edgurgel/httpoison", ref: "49ac32fa3f424b20749d55e86cffc37d55efc00a" },
+      { :poison, "~> 1.5.0" },
+      { :ref_inspector, "~> 0.8" },
+      { :ua_inspector, "~> 0.9" },
+      { :yamerl, github: "yakaz/yamerl" },
     ]
   end
 end

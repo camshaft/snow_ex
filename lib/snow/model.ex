@@ -57,7 +57,7 @@ defmodule Snow.Model do
             ip_netspeed: nil,
 
             # Web-specific
-            page_url: nil,
+            page_url: "url",
             page_urlscheme: nil,
             page_urlhost: nil,
             page_urlport: nil,
@@ -144,6 +144,8 @@ defmodule Snow.Model do
             context: "co",
             derived_contexts: nil]
 
+  json = [:etl_tags, :context]
+
   events = [pv: :page_view,
             pp: :page_ping,
             tr: :transaction,
@@ -163,7 +165,7 @@ defmodule Snow.Model do
   def from_string(qs) do
     qs
     |> URI.query_decoder()
-    |> Enum.reduce(%__MODULE__{}, &map/2)
+    |> Enum.reduce(%__MODULE__{etl_tags: [], context: []}, &map/2)
   end
 
   ## normal fields
@@ -217,6 +219,10 @@ defmodule Snow.Model do
       :maps.fold(fn
         (_, nil, acc) ->
           acc
+        (k, [], acc) when k in unquote(json) ->
+          acc
+        (k, tags, acc) when k in unquote(json) ->
+          Map.put(acc, k, JSON.encode!(tags, options))
         (k, v, acc) when k in unquote(Enum.map(fields, &(elem(&1, 0)))) ->
           Map.put(acc, k, v)
         (_, _, acc) ->

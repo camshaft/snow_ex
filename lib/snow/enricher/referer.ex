@@ -4,15 +4,16 @@ defmodule Snow.Enricher.Referer do
     |> Stream.map(&handle/1)
   end
 
-  defp handle(%{page_referrer: page_referrer, page_url: page_url} = model) when is_binary(page_referrer) do
-    {medium, source, term} = parse(page_referrer, page_url)
-
+  defp handle(%{page_referrer: page_referrer} = model) when is_binary(page_referrer) do
     %{scheme: scheme,
       host: host,
       port: port,
       path: path,
       query: query,
-      fragment: fragment} = URI.parse(page_referrer)
+      fragment: fragment} = refr = URI.parse(page_referrer)
+
+    {medium, source, term} = parse(refr, model)
+
     %{model | refr_urlscheme: scheme,
               refr_urlhost: host,
               refr_urlport: port,
@@ -27,8 +28,15 @@ defmodule Snow.Enricher.Referer do
     model
   end
 
-  defp parse(page_referrer, page_url) do
-    ## TODO
-    {nil, nil, nil}
+  defp parse(%{host: host}, %{page_urlhost: host}) do
+    {"internal", nil, nil}
+  end
+  defp parse(page_referrer, _) do
+    case RefInspector.parse(page_referrer) do
+      %{medium: medium, source: source, term: term} ->
+        {to_string(medium), to_string(source), to_string(term)}
+      _ ->
+        {nil, nil, nil}
+    end
   end
 end

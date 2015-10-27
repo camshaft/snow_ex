@@ -90,14 +90,23 @@ defmodule Snow.Parser.Cloudfront do
 
     model = cs_uri_query
     |> Snow.Model.from_string()
-    |> Map.put_new(:event_id, x_edge_location <> "|" <> x_edge_request_id)
-    |> Map.put_new(:page_url, cs_referer)
-    |> Map.put_new(:useragent, cs_user_agent)
+    |> put_new(:event_id, x_edge_location <> "|" <> x_edge_request_id)
+    |> put_new(:page_url, cs_referer)
+    |> put_new(:useragent, URI.decode(cs_user_agent))
     |> Map.merge(%{v_collector: "cf",
                    collector_tstamp: parse_tstamp(date, time),
                    user_ipaddress: c_ip})
 
     {model, b}
+  end
+
+  defp put_new(map, key, value) do
+    case Map.get(map, key) do
+      nil ->
+        Map.put(map, key, value)
+      _ ->
+        map
+    end
   end
 
   def parse_tstamp(date, time) do
