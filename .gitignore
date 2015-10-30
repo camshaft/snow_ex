@@ -3,4 +3,5 @@
 erl_crash.dump
 *.ez
 mix.lock
-priv
+priv/**.gz
+priv/**.yml
