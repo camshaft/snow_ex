@@ -1,4 +1,4 @@
-defmodule Snow.Enricher.URL do
+defmodule Snow.ETL.Enricher.URL do
   def exec(stream) do
     stream
     |> Stream.map(&handle/1)

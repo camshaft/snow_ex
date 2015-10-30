@@ -1,4 +1,4 @@
-defmodule Snow.Enricher.Marketing do
+defmodule Snow.ETL.Enricher.Marketing do
   def exec(stream) do
     stream
     |> Stream.map(&handle/1)

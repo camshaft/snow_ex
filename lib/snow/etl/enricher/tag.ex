@@ -1,4 +1,4 @@
-defmodule Snow.Enricher.Tag do
+defmodule Snow.ETL.Enricher.Tag do
   def exec(stream, tags) do
     stream
     |> Stream.map(&(handle(&1, tags)))

@@ -23,7 +23,11 @@ defmodule Snow.Mixfile do
     [
       { :geolix, "~> 0.8" },
       { :httpoison, github: "edgurgel/httpoison", ref: "49ac32fa3f424b20749d55e86cffc37d55efc00a" },
+      { :nile, "~> 0.1.0 "},
       { :poison, "~> 1.5.0" },
+      { :cowboy, "~> 1.0.0" },
+      { :plug, "~> 1.0" },
+      { :msgpax, "~> 0.8" },
       { :ref_inspector, "~> 0.8" },
       { :ua_inspector, "~> 0.9" },
       { :yamerl, github: "yakaz/yamerl" },

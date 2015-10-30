@@ -1,4 +1,4 @@
-defmodule Snow.Shredder.Utils do
+defmodule Snow.ETL.Shredder.Utils do
   def hierarchy(%{event_id: event_id, collector_tstamp: collector_tstamp}, name) do
     %{
       rootId: event_id,
@@ -7,6 +7,18 @@ defmodule Snow.Shredder.Utils do
       refTree: Poison.encode!(["events", name]),
       refParent: "events"
     }
+  end
+
+  def name(%Snow.Model{}) do
+    "events"
+  end
+  for size <- 1..6 do
+    def name(%{schema: %{vendor: vendor, name: name, version: <<version :: binary-size(unquote(size)), "-", _ :: binary>>}}) do
+      vendor <> "/" <> name <> "_" <> version
+    end
+    def name(%{schema: %{"vendor" => vendor, "name" => name, "version" => <<version :: binary-size(unquote(size)), "-", _ :: binary>>}}) do
+      vendor <> "/" <> name <> "_" <> version
+    end
   end
 
   def explode(event = %{data: data}) do

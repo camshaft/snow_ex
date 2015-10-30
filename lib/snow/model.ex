@@ -3,7 +3,7 @@ defmodule Snow.Model do
             platform: "p",
 
             # Date/time
-            collector_tstamp: nil,
+            collector_tstamp: "$ct",
             dvce_tstamp: "dtm",
             dvce_sent_tstamp: "stm",
             os_timezone: "tz",
@@ -17,7 +17,7 @@ defmodule Snow.Model do
 
             # Snowplow version fields
             v_tracker: "tv",
-            v_collector: nil,
+            v_collector: "$cv",
             v_etl: nil,
             name_tracker: "tna",
             etl_tags: nil,
@@ -165,6 +165,11 @@ defmodule Snow.Model do
   def from_string(qs) do
     qs
     |> URI.query_decoder()
+    |> from_obj()
+  end
+
+  def from_obj(obj) do
+    obj
     |> Enum.reduce(%__MODULE__{etl_tags: [], context: []}, &map/2)
   end
 
@@ -222,7 +227,7 @@ defmodule Snow.Model do
         (k, [], acc) when k in unquote(json) ->
           acc
         (k, tags, acc) when k in unquote(json) ->
-          Map.put(acc, k, JSON.encode!(tags, options))
+          Map.put(acc, k, to_string(Poison.encode!(tags, options)))
         (k, v, acc) when k in unquote(Enum.map(fields, &(elem(&1, 0)))) ->
           Map.put(acc, k, v)
         (_, _, acc) ->

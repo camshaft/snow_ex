@@ -1,4 +1,4 @@
-defmodule Snow.Shredder.Unstructured do
+defmodule Snow.ETL.Shredder.Unstructured do
   @derives [Poison.Encoder]
 
   defstruct schema: %{},
@@ -9,8 +9,11 @@ defmodule Snow.Shredder.Unstructured do
 
   def exec(stream, schemas \\ %{}) do
     stream
-    |> Stream.transform(nil, fn(model, a) ->
-      {shred(model, schemas), a}
+    |> Nile.expand(fn
+      (%Snow.Model{} = model) ->
+        [model | shred(model, schemas)]
+      (item) ->
+        [item]
     end)
   end
 
@@ -35,10 +38,10 @@ defmodule Snow.Shredder.Unstructured do
   defp format(event = %{unstruct_event: unstruct_event}, %{"self" => schema}) do
     %__MODULE__{
       schema: schema,
-      hierarchy: Snow.Shredder.Utils.hierarchy(event, schema["name"]),
+      hierarchy: Snow.ETL.Shredder.Utils.hierarchy(event, schema["name"]),
       data: unstruct_event["data"] || %{}
     }
-    |> Snow.Shredder.Utils.explode()
+    |> Snow.ETL.Shredder.Utils.explode()
   end
 
   defp error(model, schema) do
@@ -49,7 +52,7 @@ defmodule Snow.Shredder.Unstructured do
         format: "jsonschema",
         version: "1-0-0"
       },
-      hierarchy: Snow.Shredder.Utils.hierarchy(model, "bad_raw_event"),
+      hierarchy: Snow.ETL.Shredder.Utils.hierarchy(model, "bad_raw_event"),
       data: %{
         line: "",
         errors: Poison.encode!(["Unknown schema #{inspect(schema)}"])

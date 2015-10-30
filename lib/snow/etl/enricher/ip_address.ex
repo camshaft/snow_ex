@@ -1,4 +1,4 @@
-defmodule Snow.Enricher.IPAddress do
+defmodule Snow.ETL.Enricher.IPAddress do
   def exec(stream) do
     stream
     |> Stream.map(&handle/1)

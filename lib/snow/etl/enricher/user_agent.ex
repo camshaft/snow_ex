@@ -1,4 +1,4 @@
-defmodule Snow.Enricher.UserAgent do
+defmodule Snow.ETL.Enricher.UserAgent do
   def exec(stream) do
     stream
     |> Stream.map(&handle/1)

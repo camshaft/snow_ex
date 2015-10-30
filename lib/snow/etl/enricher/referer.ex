@@ -1,4 +1,4 @@
-defmodule Snow.Enricher.Referer do
+defmodule Snow.ETL.Enricher.Referer do
   def exec(stream) do
     stream
     |> Stream.map(&handle/1)
