@@ -48,6 +48,15 @@ defmodule Snow.ETL.Schemas do
           unquote(Macro.escape(schemas))
         end
 
+        def get(model, key, default) do
+          case fetch(model, key) do
+            :error ->
+              default
+            {:ok, value} ->
+              value
+          end
+        end
+
         unquote(Enum.map(schemas, &format/1))
         def fetch(_, _), do: :error
       end
@@ -60,9 +69,11 @@ defmodule Snow.ETL.Schemas do
                                      "name" => name,
                                      "format" => format,
                                      "version" => version}}) do
-    short = "iglu:#{vendor}/#{name}/#{format}/#{version}"
+    short = "#{vendor}/#{name}/#{format}/#{version}"
+    short_w_iglu = "iglu:#{vendor}/#{name}/#{format}/#{version}"
+    formats = [short, short_w_iglu, long]
     quote do
-      def fetch(_, s) when s in [unquote(short), unquote(long)] do
+      def fetch(_, s) when s in unquote(formats) do
         {:ok, unquote(Macro.escape(schema))}
       end
     end

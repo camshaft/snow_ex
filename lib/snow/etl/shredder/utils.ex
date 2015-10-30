@@ -14,10 +14,10 @@ defmodule Snow.ETL.Shredder.Utils do
   end
   for size <- 1..6 do
     def name(%{schema: %{vendor: vendor, name: name, version: <<version :: binary-size(unquote(size)), "-", _ :: binary>>}}) do
-      vendor <> "/" <> name <> "_" <> version
+      String.replace(vendor, ".", "_") <> "_" <> name <> "_" <> version
     end
     def name(%{schema: %{"vendor" => vendor, "name" => name, "version" => <<version :: binary-size(unquote(size)), "-", _ :: binary>>}}) do
-      vendor <> "/" <> name <> "_" <> version
+      String.replace(vendor, ".", "_") <> "_" <> name <> "_" <> version
     end
   end
 

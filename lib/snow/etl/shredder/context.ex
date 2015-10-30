@@ -37,11 +37,11 @@ defmodule Snow.ETL.Shredder.Context do
     end)
   end
 
-  defp format(event = %{unstruct_event: unstruct_event}, %{"self" => schema}) do
+  defp format(parent, %{"self" => schema} = event) do
     %__MODULE__{
       schema: schema,
-      hierarchy: Snow.ETL.Shredder.Utils.hierarchy(event, schema["name"]),
-      data: unstruct_event["data"] || %{}
+      hierarchy: Snow.ETL.Shredder.Utils.hierarchy(parent, schema["name"]),
+      data: event["data"] || %{}
     }
     |> Snow.ETL.Shredder.Utils.explode()
   end
