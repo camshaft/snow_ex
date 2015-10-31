@@ -78,7 +78,12 @@ defmodule Snow.Store do
             try do
               flush(ts, objs)
             catch
-              _, _ ->
+              type, error ->
+                Exception.format(type, error)
+                |> Logger.error()
+                :ets.insert(__MODULE__, for obj <- objs do
+                  {new_ts, obj}
+                end)
                 :ok
             end
         end
