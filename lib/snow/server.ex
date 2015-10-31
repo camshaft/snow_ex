@@ -3,7 +3,7 @@ defmodule Snow.Server do
 
     collector = opts[:collector]
 
-    gif = File.read!(__DIR__ <> "/../../priv/i.gif")
+    gif = File.read!(__DIR__ <> "/server/i.gif")
 
     quote do
       use Plug.Router
