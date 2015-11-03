@@ -35,8 +35,8 @@ defmodule Snow.Collector do
   end
 
   def timestamp do
-    {mega, sec, _} = :os.timestamp()
-    mega * 1_000_000 + sec
+    {mega, sec, microsec} = :os.timestamp()
+    mega * 1_000_000_000 + sec * 1_000 + div(microsec, 1_000)
   end
 
   def format_ip({a,b,c,d}) do
