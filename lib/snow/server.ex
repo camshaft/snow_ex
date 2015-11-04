@@ -30,8 +30,7 @@ defmodule Snow.Server do
           [id | _] ->
             id
           [] ->
-            :crypto.rand_bytes(21)
-            |> Base.encode64
+            nil
         end
         unquote(collector).collect(c.query_string, c.remote_ip, ua, event_id)
 

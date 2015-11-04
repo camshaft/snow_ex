@@ -171,6 +171,14 @@ defmodule Snow.Model do
   def from_obj(obj) do
     obj
     |> Enum.reduce(%__MODULE__{etl_tags: [], context: []}, &map/2)
+    |> handle_missing_event_id()
+  end
+
+  defp handle_missing_event_id(model = %{event_id: nil}) do
+    %{model | event_id: :crypto.rand_bytes(20) |> Base.encode64()}
+  end
+  defp handle_missing_event_id(model) do
+    model
   end
 
   ## normal fields
