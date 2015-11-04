@@ -186,7 +186,14 @@ defmodule Snow.Model do
     from = if is_list(from), do: from, else: [from]
     for s <- from do
       defp map({unquote(to_string(s)), value}, acc) do
-        %{acc | unquote(field) => value}
+        cond do
+          is_binary(value) && String.printable?(value) ->
+            %{acc | unquote(field) => value}
+          is_binary(value) ->
+            acc
+          true ->
+            %{acc | unquote(field) => value}
+        end
       end
     end
   end
