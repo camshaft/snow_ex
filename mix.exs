@@ -28,7 +28,7 @@ defmodule Snow.Mixfile do
       { :cowboy, "~> 1.0.0" },
       { :plug, "~> 1.0" },
       { :msgpax, "~> 0.8" },
-      { :ref_inspector, "~> 0.8" },
+      { :ref_inspector, github: "camshaft/ref_inspector" },
       { :ua_inspector, "~> 0.9" },
       { :yamerl, github: "yakaz/yamerl" },
     ]

@@ -5,11 +5,17 @@ defmodule Snow.Format do
 
   def decode_stream(stream) do
     Stream.transform(stream, [], fn(chunk, acc) ->
-      case Msgpax.unpack_slice([acc, chunk]) do
-        {:ok, obj, acc} ->
-          event = Snow.Model.from_obj(obj)
-          {[event], acc}
-      end
+      unpack([acc, chunk], [])
     end)
+  end
+
+  defp unpack(buffer, acc) do
+    case Msgpax.unpack_slice(buffer) do
+      {:error, _} ->
+        {:lists.reverse(acc), buffer}
+      {:ok, value, rest} ->
+        value = Snow.Model.from_obj(value)
+        unpack(rest, [value | acc])
+    end
   end
 end
