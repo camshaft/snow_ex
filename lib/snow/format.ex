@@ -1,5 +1,5 @@
 defmodule Snow.Format do
-  def encode(line) do
+  def encode(_line) do
 
   end
 

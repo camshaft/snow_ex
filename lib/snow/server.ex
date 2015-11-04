@@ -26,7 +26,14 @@ defmodule Snow.Server do
           [] ->
             nil
         end
-        unquote(collector).collect(c.query_string, c.remote_ip, ua)
+        event_id = case Plug.Conn.get_req_header(c, "x-request-id") do
+          [id | _] ->
+            id
+          [] ->
+            :crypto.rand_bytes(21)
+            |> Base.encode64
+        end
+        unquote(collector).collect(c.query_string, c.remote_ip, ua, event_id)
 
         c
         |> Plug.Conn.put_resp_content_type("image/gif")

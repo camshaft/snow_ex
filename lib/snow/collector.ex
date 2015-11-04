@@ -7,9 +7,10 @@ defmodule Snow.Collector do
     vc =  unquote("#{name}-#{version}")
 
     quote do
-      def collect(qs, ip, ua) do
+      def collect(qs, ip, ua, event_id) do
         init = %{"ua" => ua,
-                 "ip" => Snow.Collector.format_ip(ip)}
+                 "ip" => Snow.Collector.format_ip(ip),
+                 "eid" => event_id}
 
         qs
         |> URI.query_decoder()
