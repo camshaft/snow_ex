@@ -8,6 +8,9 @@ defmodule Snow.ETL.Enricher.Marketing do
     query
     |> URI.query_decoder()
     |> Enum.reduce(model, &parse/2)
+  catch
+    _, _ ->
+      model
   end
   defp handle(model) do
     model

@@ -187,9 +187,7 @@ defmodule Snow.Model do
     for s <- from do
       defp map({unquote(to_string(s)), value}, acc) do
         cond do
-          is_binary(value) && String.printable?(value) ->
-            %{acc | unquote(field) => value}
-          is_binary(value) ->
+          is_binary(value) && !String.printable?(value) ->
             acc
           true ->
             %{acc | unquote(field) => value}
@@ -244,7 +242,12 @@ defmodule Snow.Model do
         (k, tags, acc) when k in unquote(json) ->
           Map.put(acc, k, to_string(Poison.encode!(tags, options)))
         (k, v, acc) when k in unquote(Enum.map(fields, &(elem(&1, 0)))) ->
-          Map.put(acc, k, v)
+          cond do
+            is_binary(v) && !String.printable?(v) ->
+              acc
+            true ->
+              Map.put(acc, k, v)
+          end
         (_, _, acc) ->
           acc
       end, %{}, model)

@@ -22,6 +22,9 @@ defmodule Snow.ETL.Shredder.Unstructured do
   end
   defp shred(model = %{unstruct_event: json}, schemas) when is_binary(json) do
     shred(%{model | unstruct_event: Poison.decode!(json)}, schemas)
+  rescue
+    Poison.SyntaxError ->
+      []
   end
   defp shred(model = %{unstruct_event: %{"schema" => @unstruct_event <> _, "data" => data}}, schemas) do
     shred(%{model | unstruct_event: data}, schemas)
