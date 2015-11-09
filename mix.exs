@@ -29,7 +29,7 @@ defmodule Snow.Mixfile do
       { :plug, "~> 1.0" },
       { :msgpax, "~> 0.8" },
       { :ref_inspector, github: "camshaft/ref_inspector" },
-      { :ua_inspector, "~> 0.9" },
+      { :ua_inspector, github: "camshaft/ua_inspector" },
       { :yamerl, github: "yakaz/yamerl" },
     ]
   end
