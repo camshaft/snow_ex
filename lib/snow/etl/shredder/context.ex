@@ -27,17 +27,17 @@ defmodule Snow.ETL.Shredder.Context do
     shred(%{model | context: contexts}, schemas)
   end
   defp shred(model = %{context: contexts}, schemas) when is_list(contexts) do
-    Enum.reduce(contexts, [], fn(%{"schema" => schema}, acc) ->
+    Enum.reduce(contexts, [], fn(%{"schema" => schema} = event, acc) ->
       case Dict.fetch(schemas, schema) do
         {:ok, schema} ->
-          format(model, schema) ++ acc
+          format(model, schema, event) ++ acc
         :error ->
           [error(model, schema) | acc]
       end
     end)
   end
 
-  defp format(parent, %{"self" => schema} = event) do
+  defp format(parent, %{"self" => schema}, event) do
     %__MODULE__{
       schema: schema,
       hierarchy: Snow.ETL.Shredder.Utils.hierarchy(parent, schema["name"]),
