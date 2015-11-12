@@ -1,34 +1,31 @@
 defmodule Snow.ETL.Schemas.Compiler do
-  def define(schemas, mod) do
-    parts = Enum.map(schemas, &format/1)
+  defmacro __using__(opts) do
+    parts = Enum.map(opts[:schemas], &format/1)
 
     quote do
-      defmodule unquote(mod) do
-        def shred(%{"schema" => schema} = event, parent) do
-          import Snow.ETL.Schemas.BadRawEvent
-          case fetch(schema) do
-            nil ->
-              [unknown_schema(event, parent)]
-            config = %{"self" => self} ->
-              if validate(config, event) do
-                %Snow.ETL.Schemas.Context{
-                  schema: self,
-                  hierarchy: Snow.ETL.Shredder.Utils.hierarchy(parent, self["name"]),
-                  data: event["data"] || %{}
-                }
-                |> Snow.ETL.Shredder.Utils.explode()
-              else
-                [invalid_data(event, parent)]
-              end
-          end
+      def shred(%{"schema" => schema} = event, parent) do
+        import Snow.ETL.Schemas.BadRawEvent
+        case fetch(schema) do
+          nil ->
+            [unknown_schema(event, parent)]
+          config = %{"self" => self} ->
+            if validate(config, event) do
+              %Snow.ETL.Schemas.Context{
+                schema: self,
+                hierarchy: Snow.ETL.Shredder.Utils.hierarchy(parent, self["name"]),
+                data: event["data"] || %{}
+              }
+              |> Snow.ETL.Shredder.Utils.explode()
+            else
+              [invalid_data(event, parent)]
+            end
         end
-
-        unquote(parts)
-        def fetch(_), do: nil
-        def validate(_, _), do: false
       end
+
+      unquote(parts)
+      defp fetch(_), do: nil
+      defp validate(_, _), do: false
     end
-    |> Snow.Utils.eval_quoted()
   end
 
   defp format(schema = %{"self" => %{"vendor" => vendor,
@@ -50,11 +47,11 @@ defmodule Snow.ETL.Schemas.Compiler do
     |> fn_join(:and)
 
     quote do
-      def fetch(s) when s in unquote(formats) do
+      defp fetch(s) when s in unquote(formats) do
         unquote(Macro.escape(schema))
       end
 
-      def validate(%{"self" => unquote(Macro.escape(self))},
+      defp validate(%{"self" => unquote(Macro.escape(self))},
                    %{"data" => unquote(data_keys)}) when unquote(data_checks) do
         true
       end
