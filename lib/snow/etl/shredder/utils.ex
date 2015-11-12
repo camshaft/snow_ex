@@ -1,11 +1,11 @@
 defmodule Snow.ETL.Shredder.Utils do
   def hierarchy(%{event_id: event_id, collector_tstamp: collector_tstamp}, name) do
     %{
-      rootId: event_id,
-      rootTstamp: collector_tstamp,
-      refRoot: "events",
-      refTree: Poison.encode!(["events", name]),
-      refParent: "events"
+      "rootId": event_id,
+      "rootTstamp": collector_tstamp,
+      "refRoot": "events",
+      "refTree": Poison.encode!(["events", name]),
+      "refParent": "events"
     }
   end
 
