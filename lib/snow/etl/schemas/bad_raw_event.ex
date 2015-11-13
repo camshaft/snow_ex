@@ -1,9 +1,8 @@
 defmodule Snow.ETL.Schemas.BadRawEvent do
   def syntax_error(data, parent) do
-    data = Poison.encode!(data)
     %{bad_raw_event(parent) | data: %{
       "line": "",
-      "errors": Poison.encode!(["Syntax error " <> data])
+      "errors": Poison.encode!(["Syntax error #{inspect(data)}"])
     }}
   end
 
