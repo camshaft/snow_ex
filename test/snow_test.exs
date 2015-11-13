@@ -1,24 +1,15 @@
-defmodule SnowTest do
+defmodule Snow.Test do
   use ExUnit.Case
 
-  ## TODO build a stream "catch"
-
-  test "" do
-    # "http://s3.aws.com/foo/bar"
-    # |> HTTPStream.get()
-    # |> Zlib.inflate_stream()
-    "../snow-lambda/test/parsers/sample.log"
-    |> File.stream!()
-    |> Snow.Parser.Cloudfront.exec()
-    |> Snow.Enricher.UserAgent.exec()
-    |> Snow.Enricher.URL.exec()
-    |> Snow.Enricher.Marketing.exec()
-    |> Snow.Enricher.Referer.exec()
-    # |> Snow.Enricher.IPAddress.exec()
-    # |> Snow.Enricher.Tag.exec([])
-    # |> Snow.Shredder.Unstructured.exec()
-    # |> Snow.Serializer.Snowplow.exec()
-    # |> Zlib.deflate_stream()
-    # |> HTTPStream.put("")
+  test "enrich" do
+    Snow.Payload.Generator.payloads()
+    |> Enum.take(4)
+    |> Snow.Enrich.enrich(Etl.Enrich.Schemas, ["tag123"])
+    |> Snow.Enrich.web()
+    |> Snow.Enrich.to_json()
+    |> Snow.Enrich.into(fn(_) -> [] end)
+    |> Enum.map(fn({prefix, data}) ->
+      IO.puts([prefix, ":\n\n", data])
+    end)
   end
 end

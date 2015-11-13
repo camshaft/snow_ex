@@ -1,15 +1,9 @@
-defmodule Snow.ETL.Shredder.Context do
-  import Snow.ETL.Schemas.BadRawEvent
+defmodule Snow.Enrich.Context do
+  import Snow.Model.BadRawEvent
   @context "iglu:com.snowplowanalytics.snowplow/contexts/jsonschema/1"
 
   def exec(stream, schemas \\ %{}) do
-    stream
-    |> Nile.expand(fn
-      (%Snow.Model{} = model) ->
-        [model | shred(model, schemas)]
-      (item) ->
-        [item]
-    end)
+    stream |> Snow.Payload.derive(&(shred(&1, schemas)))
   end
 
   defp shred(%{context: nil}, _) do

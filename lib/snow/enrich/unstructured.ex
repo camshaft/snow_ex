@@ -1,15 +1,9 @@
-defmodule Snow.ETL.Shredder.Unstructured do
-  import Snow.ETL.Schemas.BadRawEvent
+defmodule Snow.Enrich.Unstructured do
+  import Snow.Model.BadRawEvent
   @unstruct_event "iglu:com.snowplowanalytics.snowplow/unstruct_event/jsonschema/1"
 
-  def exec(stream, schemas) do
-    stream
-    |> Nile.expand(fn
-      (%Snow.Model{} = model) ->
-        [model | shred(model, schemas)]
-      (item) ->
-        [item]
-    end)
+  def exec(stream, schemas \\ %{}) do
+    stream |> Snow.Payload.derive(&(shred(&1, schemas)))
   end
 
   defp shred(%{unstruct_event: nil}, _) do

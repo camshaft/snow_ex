@@ -1,21 +1,21 @@
-defmodule Snow.ETL.Schemas.Compiler do
+defmodule Snow.Schemas.Compiler do
   defmacro __using__(opts) do
     parts = Enum.map(opts[:schemas], &format/1)
 
     quote do
       def shred(%{"schema" => schema} = event, parent) do
-        import Snow.ETL.Schemas.BadRawEvent
+        import Snow.Schemas.BadRawEvent
         case fetch(schema) do
           nil ->
             [unknown_schema(event, parent)]
           config = %{"self" => self} ->
             if validate(config, event) do
-              %Snow.ETL.Schemas.Context{
+              %Snow.Model.Context{
                 schema: self,
-                hierarchy: Snow.ETL.Shredder.Utils.hierarchy(parent, self["name"]),
+                hierarchy: Snow.Enrich.Utils.hierarchy(parent, self["name"]),
                 data: event["data"] || %{}
               }
-              |> Snow.ETL.Shredder.Utils.explode()
+              |> Snow.Enrich.Utils.explode()
             else
               [invalid_data(event, parent)]
             end
