@@ -9,5 +9,5 @@ config :ua_inspector,
 config :geolix,
   databases: [
     { :city,    "priv/ip.city.mmdb.gz" },
-    { :country, "priv/ip.city.mmdb.gz" }
+    { :country, "priv/ip.country.mmdb.gz" }
   ]

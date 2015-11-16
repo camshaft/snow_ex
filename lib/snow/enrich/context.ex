@@ -1,5 +1,4 @@
 defmodule Snow.Enrich.Context do
-  import Snow.Model.BadRawEvent
   @context "iglu:com.snowplowanalytics.snowplow/contexts/jsonschema/1"
 
   def exec(stream, schemas \\ %{}) do
@@ -8,12 +7,6 @@ defmodule Snow.Enrich.Context do
 
   defp shred(%{context: nil}, _) do
     []
-  end
-  defp shred(model = %{context: json}, schemas) when is_binary(json) do
-    shred(%{model | context: Poison.decode!(json)}, schemas)
-  rescue
-    Poison.SyntaxError ->
-      [syntax_error(json, model)]
   end
   defp shred(model = %{context: %{"schema" => @context <> _, "data" => contexts}}, schemas) do
     shred(%{model | context: contexts}, schemas)

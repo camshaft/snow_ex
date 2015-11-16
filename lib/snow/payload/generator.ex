@@ -41,7 +41,22 @@ defmodule Snow.Payload.Generator do
                       "https://amazon.com/?q=my+product"])},
      {"ip", "67.2.212.46"},
      {"ua", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.80 Safari/537.36"},
-     {"tv", "1.0.0"},]
+     {"tv", "1.0.0"},
+     {"aid", one_of(["app_1", "app_2", "app_3"])},
+     {"res", "200x300"},
+     {"f_pdf", tracker_bool},
+     {"f_qt", tracker_bool},
+     {"f_realp", tracker_bool},
+     {"f_wma", tracker_bool},
+     {"f_dir", tracker_bool},
+     {"f_fla", tracker_bool},
+     {"f_java", tracker_bool},
+     {"f_gears", tracker_bool},
+     {"f_ag", tracker_bool}]
+  end
+
+  defp tracker_bool do
+    one_of(["0", "1", nil])
   end
 
   defp one_of(list) do
@@ -50,4 +65,3 @@ defmodule Snow.Payload.Generator do
     |> hd()
   end
 end
-

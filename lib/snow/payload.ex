@@ -1,116 +1,132 @@
 defmodule Snow.Payload do
 
+  platforms =      [web: :web,
+                    mob: :mobile,
+                    pc: :desktop,
+                    srv: :server,
+                    app: :application,
+                    tv: :television,
+                    cnsl: :console,
+                    iot: :internet_of_things]
+
+  events =         [pv: :page_view,
+                    pp: :page_ping,
+                    tr: :transaction,
+                    ti: :transaction_item,
+                    se: :structured_event,
+                    ue: :unstructured_event]
+
   #https://github.com/snowplow/snowplow/wiki/snowplow-tracker-protocol#1-common-parameters-platform-and-event-independent
-  common =         [tna: :name_tracker,
-                    aid: :app_id,
-                    p: :platform]
+  common =         [tna: {:name_tracker, :text},
+                    aid: {:app_id, :text},
+                    p: {:platform, platforms}]
 
   #https://github.com/snowplow/snowplow/wiki/snowplow-tracker-protocol#12-date--time-parameter
-  datetime =       [dtm: :dvce_created_tstamp,
-                    stm: :dvce_sent_tstamp,
-                    ttm: :true_tstamp,
-                    tz: :os_timezone]
+  datetime =       [dtm: {:dvce_created_tstamp, :integer},
+                    stm: {:dvce_sent_tstamp, :integer},
+                    ttm: {:true_tstamp, :integer},
+                    tz: {:os_timezone, :text}]
 
   #https://github.com/snowplow/snowplow/wiki/snowplow-tracker-protocol#13-event--transaction-parameters
-  events =         [e: :event,
-                    eid: :event_id]
+  events =         [e: {:event, events},
+                    eid: {:event_id, :text}]
 
   #https://github.com/snowplow/snowplow/wiki/snowplow-tracker-protocol#14-snowplow-tracker-version
-  tracker =        [tv: :v_tracker]
+  tracker =        [tv: {:v_tracker, :text}]
 
   #https://github.com/snowplow/snowplow/wiki/snowplow-tracker-protocol#15-user-related-parameters
-  user =           [duid: :domain_userid,
-                    nuid: :network_userid,
-                    tnuid: :network_userid,
-                    uid: :user_id,
-                    vid: :domain_sessionidx,
-                    sid: :domain_sessionid,
-                    ip: :user_ipaddress]
+  user =           [duid: {:domain_userid, :text},
+                    nuid: {:network_userid, :text},
+                    tnuid: {:network_userid, :text},
+                    uid: {:user_id, :text},
+                    vid: {:domain_sessionidx, :integer},
+                    sid: {:domain_sessionid, :text},
+                    ip: {:user_ipaddress, :text}]
 
   #https://github.com/snowplow/snowplow/wiki/snowplow-tracker-protocol#16-device-related-properties
-  device =         [res: :device_resolution]
+  device =         [res: {:device_resolution, :dimension}]
 
   #https://github.com/snowplow/snowplow/wiki/snowplow-tracker-protocol#21-web-specific-parameters
-  web =            [url: :page_url,
-                    ua: :useragent,
-                    page: :page_title,
-                    refr: :page_referrer,
-                    fp: :user_fingerprint,
-                    ctype: :connection_type,
-                    cookie: :br_cookies,
-                    lang: :br_lang,
-                    f_pdf: :br_features_pdf,
-                    f_qt: :br_features_quicktime,
-                    f_realp: :br_features_realplayer,
-                    f_wma: :br_features_windowsmedia,
-                    f_dir: :br_features_director,
-                    f_fla: :br_features_flash,
-                    f_java: :br_features_java,
-                    f_gears: :br_features_gears,
-                    f_ag: :br_features_silverlight,
-                    cd: :br_colordepth,
-                    ds: :doc_size,
-                    cs: :doc_charset,
-                    vp: :br_viewport]
+  web =            [url: {:page_url, :url},
+                    ua: {:useragent, :text},
+                    page: {:page_title, :text},
+                    refr: {:page_referrer, :url},
+                    fp: {:user_fingerprint, :integer},
+                    ctype: {:connection_type, :text},
+                    cookie: {:br_cookies, :boolean},
+                    lang: {:br_lang, :text},
+                    f_pdf: {:br_features_pdf, :boolean},
+                    f_qt: {:br_features_quicktime, :boolean},
+                    f_realp: {:br_features_realplayer, :boolean},
+                    f_wma: {:br_features_windowsmedia, :boolean},
+                    f_dir: {:br_features_director, :boolean},
+                    f_fla: {:br_features_flash, :boolean},
+                    f_java: {:br_features_java, :boolean},
+                    f_gears: {:br_features_gears, :boolean},
+                    f_ag: {:br_features_silverlight, :boolean},
+                    cd: {:br_colordepth, :integer},
+                    ds: {:doc_size, :text},
+                    cs: {:doc_charset, :text},
+                    vp: {:br_viewport, :text}]
 
   #https://github.com/snowplow/snowplow/wiki/snowplow-tracker-protocol#22-internet-of-things-specific-parameters
-  iot =            [mac: :mac_address]
+  iot =            [mac: {:mac_address, :text}]
 
   #https://github.com/snowplow/snowplow/wiki/snowplow-tracker-protocol#32-page-pings
-  page_pings =     [pp_mix: :pp_xoffset_min,
-                    pp_max: :pp_xoffset_max,
-                    pp_miy: :pp_yoffset_min,
-                    pp_may: :pp_yoffset_max]
+  page_pings =     [pp_mix: {:pp_xoffset_min, :integer},
+                    pp_max: {:pp_xoffset_max, :integer},
+                    pp_miy: {:pp_yoffset_min, :integer},
+                    pp_may: {:pp_yoffset_max, :integer}]
 
   #https://github.com/snowplow/snowplow/wiki/snowplow-tracker-protocol#34-ad-impression-tracking
-  ads =            [ad_ba: :adi_bannerid,
-                    ad_ca: :adi_campaignid,
-                    ad_ad: :adi_advertiserid,
-                    ad_uid: :adi_userid]
+  ads =            [ad_ba: {:adi_bannerid, :text},
+                    ad_ca: {:adi_campaignid, :text},
+                    ad_ad: {:adi_advertiserid, :text},
+                    ad_uid: {:adi_userid, :text}]
 
   #https://github.com/snowplow/snowplow/wiki/snowplow-tracker-protocol#35-ecommerce-tracking
-  ecommerce_txn =  [tr_id: :tr_orderid,
-                    tr_af: :tr_affiliation,
-                    tr_tt: :tr_total,
-                    tr_tx: :tr_tax,
-                    tr_sh: :tr_shipping,
-                    tr_ci: :tr_city,
-                    tr_st: :tr_state,
-                    tr_co: :tr_country,
-                    tr_cu: :tr_currency]
+  ecommerce_txn =  [tr_id: {:tr_orderid, :text},
+                    tr_af: {:tr_affiliation, :text},
+                    tr_tt: {:tr_total, :float},
+                    tr_tx: {:tr_tax, :float},
+                    tr_sh: {:tr_shipping, :float},
+                    tr_ci: {:tr_city, :text},
+                    tr_st: {:tr_state, :text},
+                    tr_co: {:tr_country, :text},
+                    tr_cu: {:tr_currency, :text}]
 
   #https://github.com/snowplow/snowplow/wiki/snowplow-tracker-protocol#352-transaction-item-parameters
-  ecommerce_item = [ti_id: :ti_orderid,
-                    ti_sk: :ti_sku,
-                    ti_na: :ti_name,
-                    ti_ca: :ti_category,
-                    ti_pr: :ti_price,
-                    ti_qu: :ti_quantity,
-                    ti_cu: :ti_currency]
+  ecommerce_item = [ti_id: {:ti_orderid, :text},
+                    ti_sk: {:ti_sku, :text},
+                    ti_na: {:ti_name, :text},
+                    ti_ca: {:ti_category, :text},
+                    ti_pr: {:ti_price, :float},
+                    ti_qu: {:ti_quantity, :integer},
+                    ti_cu: {:ti_currency, :text}]
 
   #https://github.com/snowplow/snowplow/wiki/snowplow-tracker-protocol#36-social-tracking
-  social =         [sa: :social_action,
-                    sn: :social_network,
-                    st: :social_target,
-                    sp: :social_pagepath]
+  social =         [sa: {:social_action, :text},
+                    sn: {:social_network, :text},
+                    st: {:social_target, :text},
+                    sp: {:social_pagepath, :text}]
 
   #https://github.com/snowplow/snowplow/wiki/snowplow-tracker-protocol#39-custom-structured-event-tracking
-  structured =     [se_ca: :se_category,
-                    se_ac: :se_action,
-                    se_la: :se_label,
-                    se_pr: :se_property,
-                    se_va: :se_value]
+  structured =     [se_ca: {:se_category, :text},
+                    se_ac: {:se_action, :text},
+                    se_la: {:se_label, :text},
+                    se_pr: {:se_property, :text},
+                    se_va: {:se_value, :float}]
 
   #https://github.com/snowplow/snowplow/wiki/snowplow-tracker-protocol#310-custom-unstructured-event-tracking
-  unstructured =   [ue_pr: :unstruct_event,
-                    ua_px: :unstruct_event]
+  unstructured =   [ue_pr: {:unstruct_event, :json},
+                    ua_px: {:unstruct_event, :base64_json}]
 
   #https://github.com/snowplow/snowplow/wiki/snowplow-tracker-protocol#4-custom-contexts
-  contexts =       [co: :context,
-                    cx: :context]
+  contexts =       [co: {:context, :json},
+                    cx: {:context, :base64_json}]
 
-  collector =      ["$cv": :v_collector,
-                    "$ct": :collector_tstamp]
+  collector =      ["$cv": {:v_collector, :text},
+                    "$ct": {:collector_tstamp, :integer}]
 
   mappings =       [common,
                     datetime,
@@ -134,34 +150,15 @@ defmodule Snow.Payload do
     unquote(mappings)
   end
 
-  platforms =      [web: :web,
-                    mob: :mobile,
-                    pc: :desktop,
-                    srv: :server,
-                    app: :application,
-                    tv: :television,
-                    cnsl: :console,
-                    iot: :internet_of_things]
-
   def platforms() do
     unquote(platforms)
   end
-
-  events =         [pv: :page_view,
-                    pp: :page_ping,
-                    tr: :transaction,
-                    ti: :transaction_item,
-                    se: :structured_event,
-                    ue: :unstructured_event]
 
   def events() do
     unquote(events)
   end
 
-  base64 =         [ua_px: :unstruct_event,
-                    cx: :context]
-
-  fields = mappings |> Keyword.values() |> Enum.uniq()
+  fields = mappings |> Enum.map(fn({_, {n, _}}) -> n end) |> Enum.uniq()
 
   defstruct Enum.map(fields, &({&1, nil})) ++ [derived_contexts: [],
                                                atomic_event: nil]
@@ -190,55 +187,83 @@ defmodule Snow.Payload do
     end)
   end
 
-  for {from, to} <- mappings do
-    cond do
-      from in [:p, :e | Keyword.keys(base64)] ->
-        nil
-      from in [:url, :refr] ->
-        defp map({unquote(to_string(from)), value}, payload) do
-          %{payload | unquote(to) => URI.parse(value)}
-        end
-      true ->
-        defp map({unquote(to_string(from)), value}, payload) do
+  for {from, {to, type}} <- mappings do
+    from_s = to_string(from)
+    case type do
+      :text ->
+        defp map({unquote(from_s), value}, payload) do
           %{payload | unquote(to) => value}
         end
-    end
-  end
-
-  for {from, to} <- platforms do
-    defp map({"p", unquote(to_string(from))}, payload) do
-      %{payload | platform: unquote(to)}
-    end
-  end
-
-  for {from, to} <- events do
-    defp map({"e", unquote(to_string(from))}, payload) do
-      %{payload | event: unquote(to)}
-    end
-  end
-
-  for {from, to} <- base64 do
-    defp map({unquote(to_string(from)), value}, acc) do
-      value = case byte_size(value) |> rem(4) do
-        0 -> value
-        1 -> value <> "==="
-        2 -> value <> "=="
-        3 -> value <> "="
-      end
-      %{acc | unquote(to) => Base.url_decode64!(value)}
-    end
-  end
-
-  for {from, {width, height}} <- dimensions do
-    for ws <- 1..5, hs <- 1..5 do
-      defp map({unquote(to_string(from)), <<w :: size(unquote(ws))-binary, "x", h :: size(unquote(hs))-binary>>}, acc) do
-        %{acc | unquote(width) => w, unquote(height) => h}
-      end
+      :integer ->
+        defp map({unquote(from_s), value}, payload) do
+          %{payload | unquote(to) => String.to_integer(value)}
+        rescue
+          ArgumentError ->
+            payload
+        end
+      :float ->
+        defp map({unquote(from_s), value}, payload) do
+          %{payload | unquote(to) => String.to_float(value)}
+        rescue
+          ArgumentError ->
+            payload
+        end
+      :url ->
+        defp map({unquote(from_s), value}, payload) do
+          %{payload | unquote(to) => URI.parse(value)}
+        end
+      :boolean ->
+        defp map({unquote(from_s), value}, payload) when value in ["1", "true"] do
+          %{payload | unquote(to) => true}
+        end
+        defp map({unquote(from_s), value}, payload) when value in ["0", "false"] do
+          %{payload | unquote(to) => false}
+        end
+      :dimension ->
+        for ws <- 1..5, hs <- 1..5 do
+          defp map({unquote(from_s), <<w :: size(unquote(ws))-binary, "x", h :: size(unquote(hs))-binary>>}, payload) do
+            %{payload | unquote(to) => {w, h}}
+          end
+        end
+      :json ->
+        defp map({unquote(from_s), json}, payload) do
+          %{payload | unquote(to) => decode_json(json)}
+        rescue
+          Poison.SyntaxError ->
+            put(payload, :derived_contexts, Snow.Model.BadRawEvent.syntax_error(json, payload))
+        end
+      :base64_json ->
+        defp map({unquote(from_s), value}, payload) do
+          %{payload | unquote(to) => value |> decode_base64() |> decode_json()}
+        rescue
+          Poison.SyntaxError ->
+            put(payload, :derived_contexts, Snow.Model.BadRawEvent.syntax_error(decode_base64(value), payload))
+        end
+      _ when is_list(type) ->
+        for {f, t} <- type do
+          defp map({unquote(from_s), unquote(to_string(f))}, payload) do
+            %{payload | unquote(to) => unquote(t)}
+          end
+        end
     end
   end
 
   defp map(_, payload) do
     payload
+  end
+
+  defp decode_json(value) do
+    value |> Poison.decode!()
+  end
+
+  defp decode_base64(value) do
+    (case byte_size(value) |> rem(4) do
+      0 -> value
+      1 -> value <> "==="
+      2 -> value <> "=="
+      3 -> value <> "="
+    end)
+    |> Base.url_decode64!()
   end
 
   use Dict

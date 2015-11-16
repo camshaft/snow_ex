@@ -13,6 +13,7 @@ defmodule Snow.Enrich do
     |> __MODULE__.Web.Marketing.exec()
     |> __MODULE__.Web.IPAddress.exec()
     |> __MODULE__.Web.UserAgent.exec()
+    |> __MODULE__.Web.Browser.exec()
   end
 
   def to_json(stream) do
