@@ -14,7 +14,7 @@ defmodule Snow.Format do
       {:error, _} ->
         {:lists.reverse(acc), buffer}
       {:ok, value, rest} ->
-        value = Snow.Model.from_obj(value)
+        value = Snow.Payload.from_dict(value)
         unpack(rest, [value | acc])
     end
   end

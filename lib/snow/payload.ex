@@ -119,7 +119,7 @@ defmodule Snow.Payload do
 
   #https://github.com/snowplow/snowplow/wiki/snowplow-tracker-protocol#310-custom-unstructured-event-tracking
   unstructured =   [ue_pr: {:unstruct_event, :json},
-                    ua_px: {:unstruct_event, :base64_json}]
+                    ue_px: {:unstruct_event, :base64_json}]
 
   #https://github.com/snowplow/snowplow/wiki/snowplow-tracker-protocol#4-custom-contexts
   contexts =       [co: {:context, :json},

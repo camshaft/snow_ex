@@ -56,7 +56,7 @@ defmodule Snow.Model.Event do
   def put(event, :etl_tags, contexts) do
     put(event, :etl_tags, [contexts])
   end
-  def put(event, key, value) when key in unquote(fields) do
+  def put(event, key, value) when key in unquote(Dict.keys(fields)) do
     Map.put(event, key, value)
   end
 

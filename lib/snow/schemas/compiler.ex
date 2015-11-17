@@ -4,7 +4,7 @@ defmodule Snow.Schemas.Compiler do
 
     quote do
       def shred(%{"schema" => schema} = event, parent) do
-        import Snow.Schemas.BadRawEvent
+        import Snow.Model.BadRawEvent
         case fetch(schema) do
           nil ->
             [unknown_schema(event, parent)]
@@ -12,7 +12,7 @@ defmodule Snow.Schemas.Compiler do
             if validate(config, event) do
               %Snow.Model.Context{
                 schema: self,
-                hierarchy: Snow.Enrich.Utils.hierarchy(parent, self["name"]),
+                parent: parent,
                 data: event["data"] || %{}
               }
               |> Snow.Enrich.Utils.explode()
