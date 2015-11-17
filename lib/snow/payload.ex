@@ -185,7 +185,7 @@ defmodule Snow.Payload do
 
   def derived_contexts(stream) do
     Nile.expand(stream, fn(%__MODULE__{atomic_event: event, derived_contexts: contexts}) ->
-      [event | contexts]
+      [Dict.put(event, :derived_schemas, contexts) | contexts]
     end)
   end
 

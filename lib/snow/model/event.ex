@@ -20,12 +20,13 @@ defmodule Snow.Model.Event do
             v_collector: :string,
             v_etl: :string,
             name_tracker: :string,
-            etl_tags: :string]
+            etl_tags: :string,
+            derived_schemas: :string]
 
   defstruct Enum.map(fields, &({elem(&1, 0), nil}))
 
   field_vars = fields
-  |> Dict.drop([:etl_tags, :etl_tstamp, :v_etl, :derived_tstamp])
+  |> Dict.drop([:etl_tags, :etl_tstamp, :v_etl, :derived_tstamp, :derived_schemas])
   |> Dict.keys()
   |> Enum.map(&({&1, Macro.var(&1, nil)}))
 
@@ -55,6 +56,13 @@ defmodule Snow.Model.Event do
   end
   def put(event, :etl_tags, contexts) do
     put(event, :etl_tags, [contexts])
+  end
+  def put(event, :derived_schemas, contexts) do
+    schemas = contexts
+    |> Enum.map(&Snow.Model.name/1)
+    |> Enum.uniq()
+    |> Enum.join(",")
+    %{event | derived_schemas: schemas}
   end
   def put(event, key, value) when key in unquote(Dict.keys(fields)) do
     Map.put(event, key, value)
