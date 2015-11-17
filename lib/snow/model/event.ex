@@ -1,28 +1,28 @@
 defmodule Snow.Model.Event do
             #https://github.com/snowplow/snowplow/wiki/canonical-event-model#211-application-fields
-  fields = [app_id: nil,
-            platform: nil,
+  fields = [app_id: :string,
+            platform: :string,
 
             #https://github.com/snowplow/snowplow/wiki/canonical-event-model#212-date--time-fields
-            collector_tstamp: nil,
-            dvce_created_tstamp: nil,
-            dvce_sent_tstamp: nil,
-            etl_tstamp: nil,
-            derived_tstamp: nil,
-            true_tstamp: nil,
+            collector_tstamp: :integer,
+            dvce_created_tstamp: :integer,
+            dvce_sent_tstamp: :integer,
+            etl_tstamp: :integer,
+            derived_tstamp: :integer,
+            true_tstamp: :integer,
 
             #https://github.com/snowplow/snowplow/wiki/canonical-event-model#213-event--transaction-fields
-            event: nil,
-            event_id: nil,
+            event: :string,
+            event_id: :string,
 
             #https://github.com/snowplow/snowplow/wiki/canonical-event-model#214-snowplow-version-fields
-            v_tracker: nil,
-            v_collector: nil,
-            v_etl: nil,
-            name_tracker: nil,
-            etl_tags: []]
+            v_tracker: :string,
+            v_collector: :string,
+            v_etl: :string,
+            name_tracker: :string,
+            etl_tags: :string]
 
-  defstruct fields
+  defstruct Enum.map(fields, &({elem(&1, 0), nil}))
 
   field_vars = fields
   |> Dict.drop([:etl_tags, :etl_tstamp, :v_etl, :derived_tstamp])
@@ -30,7 +30,7 @@ defmodule Snow.Model.Event do
   |> Enum.map(&({&1, Macro.var(&1, nil)}))
 
   def from_payload(payload = %{unquote_splicing(field_vars)}) do
-    %{payload | atomic_event: %__MODULE__{unquote_splicing(field_vars)}}
+    %{payload | atomic_event: %__MODULE__{unquote_splicing([{:etl_tags, []} | field_vars])}}
   end
 
   use Dict
