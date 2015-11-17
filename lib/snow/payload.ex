@@ -194,7 +194,11 @@ defmodule Snow.Payload do
     case type do
       :text ->
         defp map({unquote(from_s), value}, payload) do
-          %{payload | unquote(to) => value}
+          if String.printable?(value) do
+            %{payload | unquote(to) => value}
+          else
+            payload
+          end
         end
       :integer ->
         defp map({unquote(from_s), value}, payload) when is_binary(value) do
@@ -218,7 +222,11 @@ defmodule Snow.Payload do
         end
       :url ->
         defp map({unquote(from_s), value}, payload) do
-          %{payload | unquote(to) => URI.parse(value)}
+          if String.printable?(value) do
+            %{payload | unquote(to) => URI.parse(value)}
+          else
+            payload
+          end
         end
       :boolean ->
         defp map({unquote(from_s), value}, payload) when value in ["1", "true"] do
