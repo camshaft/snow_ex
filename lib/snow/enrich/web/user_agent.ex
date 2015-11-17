@@ -1,25 +1,15 @@
 defmodule Snow.Enrich.Web.UserAgent do
+  use Snow.Model.Context
+
   def exec(stream) do
     Stream.map(stream, &handle/1)
   end
 
   defp handle(%{useragent: useragent} = payload) when is_binary(useragent) do
-    context = useragent
+    useragent
     |> UAInspector.parse_client()
     |> extract(payload)
-
-    Dict.put(payload, :derived_contexts, [%Snow.Model.Context{
-      parent: payload,
-      schema: %{
-        "vendor": "com.camshaft.snow.web",
-        "name": "useragent",
-        "format": "jsonschema",
-        "version": "1-0-0"
-      },
-      data: %{
-        "useragent" => useragent
-      }
-    } | context])
+    |> put_context([vendor: "web", name: "useragent"], [useragent: useragent])
   end
   defp handle(payload) do
     payload
@@ -30,8 +20,8 @@ defmodule Snow.Enrich.Web.UserAgent do
            os: [:name, :platform, :version]]
 
   defp extract(info, payload) do
-    unquote(Enum.reduce(types, [], fn({name, _}, acc) ->
-      {:"extract_#{name}", [], [acc, Macro.var(:info, nil), Macro.var(:payload, nil)]}
+    unquote(Enum.reduce(types, Macro.var(:payload, nil), fn({name, _}, acc) ->
+      {:"extract_#{name}", [], [Macro.var(:info, nil), acc]}
     end))
   end
 
@@ -40,25 +30,16 @@ defmodule Snow.Enrich.Web.UserAgent do
 
     args_unknown = {:%{}, [], params |> Enum.map(&({&1, :unknown}))}
     args = {:%{}, [], params |> Enum.map(&({&1, Macro.var(&1, nil)}))}
-    data = {:%{}, [], params |> Enum.map(&({to_string(&1), Macro.var(&1, nil)}))}
+    data = params |> Enum.map(&({&1, Macro.var(&1, nil)}))
 
-    defp unquote(fn_name)(acc, %{unquote(name) => unquote(args_unknown)}, _) do
-      acc
+    defp unquote(fn_name)(%{unquote(name) => unquote(args_unknown)}, payload) do
+      payload
     end
-    defp unquote(fn_name)(acc, %{unquote(name) => unquote(args)}, payload) do
-      [%Snow.Model.Context{
-        parent: payload,
-        schema: %{
-          "vendor": "com.camshaft.snow.web.useragent",
-          "name": unquote(to_string(name)),
-          "format": "jsonschema",
-          "version": "1-0-0"
-        },
-        data: unquote(data)
-      } | acc]
+    defp unquote(fn_name)(%{unquote(name) => unquote(args)}, payload) do
+      put_context(payload, [vendor: "web.useragent", name: unquote(name)], unquote(data))
     end
-    defp unquote(fn_name)(acc, _, _) do
-      acc
+    defp unquote(fn_name)(_, payload) do
+      payload
     end
   end
 end

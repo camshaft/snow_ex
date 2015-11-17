@@ -9,7 +9,7 @@ defmodule Snow.Collector do
     quote do
       def collect(qs, ip, ua, event_id) do
         init = %{"ua" => ua,
-                 "ip" => Snow.Collector.format_ip(ip),
+                 "ip" => Snow.Utils.format_ip(ip),
                  "eid" => event_id}
 
         qs
@@ -19,7 +19,7 @@ defmodule Snow.Collector do
         end)
         |> Map.merge(%{
           "$cv" => unquote(vc),
-          "$ct" => Snow.Collector.timestamp
+          "$ct" => Snow.Utils.timestamp
         })
         |> encode()
         |> unquote(store).store()
@@ -33,31 +33,5 @@ defmodule Snow.Collector do
 
       defoverridable [encode: 1]
     end
-  end
-
-  def timestamp do
-    {mega, sec, microsec} = :os.timestamp()
-    mega * 1_000_000_000 + sec * 1_000 + div(microsec, 1_000)
-  end
-
-  def format_ip({a,b,c,d}) do
-    "#{a}.#{b}.#{c}.#{d}"
-  end
-  def format_ip({a,b,c,d,e,f,g,h}) do
-    to_hex(a) <> ":" <>
-      to_hex(b) <> ":" <>
-      to_hex(c) <> ":" <>
-      to_hex(d) <> ":" <>
-      to_hex(e) <> ":" <>
-      to_hex(f) <> ":" <>
-      to_hex(g) <> ":" <>
-      to_hex(h) <> ":"
-  end
-  def format_ip(nil) do
-    nil
-  end
-
-  defp to_hex(num) do
-    :erlang.integer_to_binary(num, 16)
   end
 end

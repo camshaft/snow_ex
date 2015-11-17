@@ -5,6 +5,7 @@ defmodule Snow.Test do
     Snow.Payload.Generator.payloads()
     |> Enum.take(4)
     |> Snow.Enrich.enrich(Etl.Enrich.Schemas, ["tag123"])
+    |> Snow.Enrich.common()
     |> Snow.Enrich.web()
     |> Snow.Enrich.to_json()
     |> Snow.Enrich.into(fn(_) -> [] end)

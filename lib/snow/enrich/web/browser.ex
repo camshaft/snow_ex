@@ -1,44 +1,47 @@
 defmodule Snow.Enrich.Web.Browser do
+  use Snow.Model.Context
+
   def exec(stream) do
     Stream.map(stream, &handle/1)
   end
 
-  # fields = [
-  #   :br_lang, :br_colordepth, :doc_size, :doc_charset, :br_viewport
-  # ]
+  attributes = [
+    br_lang: {:string, :language},
+    br_colordepth: {:integer, :colordepth},
+    br_viewport: {:integer, :viewport_width, :viewport_height},
+    user_fingerprint: {:integer, :fingerprint}
+  ]
 
-  # dimensions = [
-  #   :doc_size, :br_viewport
-  # ]
+  attributes_nils = Enum.map(attributes, fn
+    ({name, {_, _, _}}) -> {name, {nil, nil}}
+    ({name, _}) -> {name, nil}
+  end)
+  attributes_vars = Enum.map(attributes, fn
+    ({name, {_, w, h}}) -> {name, {Macro.var(w, nil), Macro.var(h, nil)}}
+    ({name, {_, var}}) -> {name, Macro.var(var, nil)}
+  end)
+  attributes_mappings = Enum.reduce(attributes, [], fn
+    ({_, {type, w, h}}, acc) -> [{w, {:::, [], [Macro.var(w, nil), type]}},
+                                 {h, {:::, [], [Macro.var(h, nil), type]}} | acc]
+    ({_, {type, var}}, acc) -> [{var, {:::, [], [Macro.var(var, nil), type]}} | acc]
+  end)
 
-  defp handle(payload) do
-    payload
-    |> features()
-  end
-
-  fields = [
-    :pdf, :quicktime, :realplayer,
+  features = [
+    :cookies, :pdf, :quicktime, :realplayer,
     :windowsmedia, :director, :flash,
     :java, :gears, :silverlight
   ]
 
-  field_nils = Enum.map(fields, &({:"br_features_#{&1}", nil}))
-  field_vars = Enum.map(fields, &({:"br_features_#{&1}", Macro.var(&1, nil)}))
-  field_short_vars = Enum.map(fields, &({to_string(&1), Macro.var(&1, nil)}))
+  features_nils = Enum.map(features, &({:"br_features_#{&1}", nil}))
+  features_vars = Enum.map(features, &({:"br_features_#{&1}", Macro.var(&1, nil)}))
+  features_mappings = Enum.map(features, &({:"feature_#{&1}", {:::, [], [Macro.var(&1, nil), :boolean]}}))
 
-  defp features(unquote({:%{}, [], [{:br_cookies, nil} | field_nils]}) = payload) do
+  defp handle(unquote({:%{}, [], features_nils ++ attributes_nils}) = payload) do
     payload
   end
-  defp features(unquote({:%{}, [], [{:br_cookies, Macro.var(:cookies, nil)} | field_vars]}) = payload) do
-    Dict.put(payload, :derived_contexts, %Snow.Model.Context{
-      parent: payload,
-      schema: %{
-        "vendor": "com.camshaft.snow.browser",
-        "name": "features",
-        "format": "jsonschema",
-        "version": "1-0-0"
-      },
-      data: unquote({:%{}, [], [{"cookies", Macro.var(:cookies, nil)} | field_short_vars]})
-    })
+  defp handle(unquote({:%{}, [], features_vars ++ attributes_vars}) = payload) do
+    put_context(payload,
+      [vendor: "web", name: "browser"],
+      unquote(attributes_mappings ++ features_mappings))
   end
 end

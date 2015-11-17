@@ -1,4 +1,6 @@
 defmodule Snow.Enrich.Web.Marketing do
+  use Snow.Model.Context
+
   def exec(stream) do
     Stream.map(stream, &handle/1)
   end
@@ -16,28 +18,21 @@ defmodule Snow.Enrich.Web.Marketing do
     payload
   end
 
-  defp context(params, payload) do
-    if Map.size(params) > 0 do
-      Dict.put(payload, :derived_contexts, %Snow.Model.Context{
-        parent: payload,
-        schema: %{
-          "vendor": "com.camshaft.snow.web",
-          "name": "marketing",
-          "format": "jsonschema",
-          "version": "1-0-0"
-        },
-        data: params
-      })
-    else
-      payload
-    end
-  end
-
   terms = [utm_medium: :medium,
            utm_source: :source,
            utm_term: :term,
            utm_content: :content,
            utm_campaign: :campaign]
+
+  term_nils = terms |> Dict.values |> Enum.map(&({&1, nil}))
+  term_vars = terms |> Dict.values |> Enum.map(&({&1, Macro.var(&1, nil)}))
+
+  defp context(%{unquote_splicing(term_nils)}, payload) do
+    payload
+  end
+  defp context(%{unquote_splicing(term_vars)}, payload) do
+    put_context(payload, [vendor: "web", name: "marketing"], unquote(term_vars))
+  end
 
   for {from, to} <- terms do
     defp parse({unquote(to_string(from)), value}, acc) do

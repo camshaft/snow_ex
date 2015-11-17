@@ -6,7 +6,7 @@ defmodule Snow.Payload.Generator do
   def payload do
     required
     |> Stream.concat(optional)
-    |> Snow.Payload.from_stream()
+    |> Snow.Payload.from_dict()
   end
 
   defp required do
@@ -14,7 +14,8 @@ defmodule Snow.Payload.Generator do
       v_tracker,
       platform,
       event,
-      event_id
+      event_id,
+      collector_tstamp
     ]
   end
 
@@ -32,6 +33,10 @@ defmodule Snow.Payload.Generator do
 
   defp event_id do
     {"eid", :crypto.rand_bytes(20) |> Base.encode16()}
+  end
+
+  defp collector_tstamp do
+    {"$ct", Snow.Utils.timestamp}
   end
 
   defp optional do

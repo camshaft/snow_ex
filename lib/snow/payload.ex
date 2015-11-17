@@ -53,7 +53,7 @@ defmodule Snow.Payload do
                     refr: {:page_referrer, :url},
                     fp: {:user_fingerprint, :integer},
                     ctype: {:connection_type, :text},
-                    cookie: {:br_cookies, :boolean},
+                    cookie: {:br_features_cookies, :boolean}, # note: we use br_features_cookies instead of br_cookies
                     lang: {:br_lang, :text},
                     f_pdf: {:br_features_pdf, :boolean},
                     f_qt: {:br_features_quicktime, :boolean},
@@ -65,9 +65,9 @@ defmodule Snow.Payload do
                     f_gears: {:br_features_gears, :boolean},
                     f_ag: {:br_features_silverlight, :boolean},
                     cd: {:br_colordepth, :integer},
-                    ds: {:doc_size, :text},
+                    ds: {:doc_size, :dimension},
                     cs: {:doc_charset, :text},
-                    vp: {:br_viewport, :text}]
+                    vp: {:br_viewport, :dimension}]
 
   #https://github.com/snowplow/snowplow/wiki/snowplow-tracker-protocol#22-internet-of-things-specific-parameters
   iot =            [mac: {:mac_address, :text}]
@@ -158,19 +158,21 @@ defmodule Snow.Payload do
     unquote(events)
   end
 
-  fields = mappings |> Enum.map(fn({_, {n, _}}) -> n end) |> Enum.uniq()
+  defaults = %{dimension: {nil, nil}}
 
-  defstruct Enum.map(fields, &({&1, nil})) ++ [derived_contexts: [],
-                                               atomic_event: nil]
+  fields = mappings |> Enum.map(fn({_, {n, t}}) -> {n, Dict.get(defaults, t)} end) |> Enum.uniq()
+
+  defstruct fields ++ [derived_contexts: [],
+                       atomic_event: nil]
 
   def from_qs(qs) do
     qs
     |> URI.query_decoder()
-    |> from_stream()
+    |> from_dict()
   end
 
-  def from_stream(stream) do
-    stream
+  def from_dict(dict) do
+    dict
     |> Enum.reduce(%__MODULE__{}, &map/2)
     |> Snow.Model.Event.from_payload()
   end
@@ -195,18 +197,24 @@ defmodule Snow.Payload do
           %{payload | unquote(to) => value}
         end
       :integer ->
-        defp map({unquote(from_s), value}, payload) do
+        defp map({unquote(from_s), value}, payload) when is_binary(value) do
           %{payload | unquote(to) => String.to_integer(value)}
         rescue
           ArgumentError ->
             payload
         end
+        defp map({unquote(from_s), value}, payload) when is_integer(value) do
+          %{payload | unquote(to) => value}
+        end
       :float ->
-        defp map({unquote(from_s), value}, payload) do
+        defp map({unquote(from_s), value}, payload) when is_binary(value) do
           %{payload | unquote(to) => String.to_float(value)}
         rescue
           ArgumentError ->
             payload
+        end
+        defp map({unquote(from_s), value}, payload) when is_float(value) do
+          %{payload | unquote(to) => value}
         end
       :url ->
         defp map({unquote(from_s), value}, payload) do
@@ -222,7 +230,7 @@ defmodule Snow.Payload do
       :dimension ->
         for ws <- 1..5, hs <- 1..5 do
           defp map({unquote(from_s), <<w :: size(unquote(ws))-binary, "x", h :: size(unquote(hs))-binary>>}, payload) do
-            %{payload | unquote(to) => {w, h}}
+            %{payload | unquote(to) => {String.to_integer(w), String.to_integer(h)}}
           end
         end
       :json ->
@@ -289,7 +297,7 @@ defmodule Snow.Payload do
   def put(payload, :derived_contexts, contexts) do
     put(payload, :derived_contexts, [contexts])
   end
-  def put(payload, key, value) when key in unquote(fields) do
+  def put(payload, key, value) when key in unquote(Dict.keys(fields)) do
     Map.put(payload, key, value)
   end
 

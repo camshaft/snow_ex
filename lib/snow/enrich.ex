@@ -1,4 +1,22 @@
 defmodule Snow.Enrich do
+  def contexts do
+    __MODULE__.Web.contexts
+    ++ __MODULE__.Common.contexts
+  end
+
+  def extract_contexts(dir \\ "schemas") do
+    contexts
+    |> Enum.each(fn(%{"self" => %{"vendor" => vendor, "name" => name,
+                                  "format" => format, "version" => version}} = context) ->
+      target = [dir, vendor, name, format] |> Path.join()
+      target |> File.mkdir_p!()
+
+      [target, "#{version}.json"]
+      |> Path.join()
+      |> File.write!(Poison.encode!(context, pretty: true))
+    end)
+  end
+
   def enrich(stream, schemas \\ nil, tags \\ nil) do
     stream
     |> __MODULE__.Tag.exec(tags)
@@ -6,14 +24,12 @@ defmodule Snow.Enrich do
     |> __MODULE__.Unstructured.exec(schemas)
   end
 
+  def common(stream) do
+    __MODULE__.Common.exec(stream)
+  end
+
   def web(stream) do
-    stream
-    |> __MODULE__.Web.URL.exec()
-    |> __MODULE__.Web.Referer.exec()
-    |> __MODULE__.Web.Marketing.exec()
-    |> __MODULE__.Web.IPAddress.exec()
-    |> __MODULE__.Web.UserAgent.exec()
-    |> __MODULE__.Web.Browser.exec()
+    __MODULE__.Web.exec(stream)
   end
 
   def to_json(stream) do
