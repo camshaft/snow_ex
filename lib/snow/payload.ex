@@ -189,6 +189,9 @@ defmodule Snow.Payload do
     end)
   end
 
+  defp map({_, nil}, payload) do
+    payload
+  end
   for {from, {to, type}} <- mappings do
     from_s = to_string(from)
     case type do
