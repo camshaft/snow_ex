@@ -2,6 +2,7 @@ defmodule Snow.Model.Event do
             #https://github.com/snowplow/snowplow/wiki/canonical-event-model#211-application-fields
   fields = [app_id: :string,
             platform: :string,
+            environment: :string,
 
             #https://github.com/snowplow/snowplow/wiki/canonical-event-model#212-date--time-fields
             collector_tstamp: :integer,
@@ -26,7 +27,7 @@ defmodule Snow.Model.Event do
   defstruct Enum.map(fields, &({elem(&1, 0), nil}))
 
   field_vars = fields
-  |> Dict.drop([:etl_tags, :etl_tstamp, :v_etl, :derived_tstamp, :derived_schemas])
+  |> Dict.drop([:environment, :etl_tags, :etl_tstamp, :v_etl, :derived_tstamp, :derived_schemas])
   |> Dict.keys()
   |> Enum.map(&({&1, Macro.var(&1, nil)}))
 
