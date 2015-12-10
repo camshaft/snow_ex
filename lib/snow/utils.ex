@@ -29,7 +29,7 @@ defmodule Snow.Utils do
       to_hex(e) <> ":" <>
       to_hex(f) <> ":" <>
       to_hex(g) <> ":" <>
-      to_hex(h) <> ":"
+      to_hex(h)
   end
   def format_ip(nil) do
     nil
