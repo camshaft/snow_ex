@@ -10,6 +10,9 @@ defmodule Snow.Enrich.Web.Marketing do
     |> URI.query_decoder()
     |> Enum.reduce(nil, &parse/2)
     |> context(payload)
+  catch
+    _, _ ->
+      payload
   end
   defp handle(payload) do
     payload
