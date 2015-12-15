@@ -38,13 +38,7 @@ defmodule Snow.Schemas.Compiler do
     short_w_iglu = "iglu:#{vendor}/#{name}/#{format}/#{version}"
     formats = [short, short_w_iglu]
 
-    data_keys = {:%{}, [], properties
-    |> Map.keys()
-    |> Enum.map(&({&1, to_var(&1)}))}
-
-    data_checks = properties
-    |> Enum.map(&format_checks/1)
-    |> fn_join(:and)
+    {required, checks} = properties |> Map.to_list |> format_checks([], [])
 
     quote do
       defp fetch(s) when s in unquote(formats) do
@@ -52,24 +46,45 @@ defmodule Snow.Schemas.Compiler do
       end
 
       defp validate(%{"self" => unquote(Macro.escape(self))},
-                   %{"data" => unquote(data_keys)}) when unquote(data_checks) do
-        true
+                    %{"data" => data = unquote(required)}) do
+        Enum.all?(data, unquote(checks))
       end
     end
   end
 
-  defp format_checks({key, %{"type" => type}}) when is_binary(type) do
-    format_checks(key, [type])
+  defp format_checks([], required, checks) do
+    {{:%{}, [], required}, {:fn, [], checks ++ quote do
+      (_) ->
+        false
+    end}}
   end
-  defp format_checks({key, %{"type" => types}}) when is_list(types) do
-    format_checks(key, types)
+  defp format_checks([{key, %{"type" => type} = config} | properties], required, checks) when is_binary(type) do
+    format_checks([{key, %{config | "type" => [type]}} | properties], required, checks)
   end
-  defp format_checks({key, %{"enum" => enum}}) when is_list(enum) do
-    quote do
-      unquote(key |> to_var()) in unquote(enum)
-    end
+  defp format_checks([{key, %{"type" => types}} | properties], required, checks) when is_list(types) do
+    required = if !("null" in types || nil in types) do
+      [required(key) | required]
+    end || required
+
+    format_checks(properties, required, checks ++ quote do
+      ({unquote(key), unquote(to_var(key))}) when unquote(types_to_check(types, key)) ->
+        true
+    end)
   end
-  defp format_checks(key, types) do
+
+  defp format_checks([{key, %{"enum" => enum}} | properties], required, checks) when is_list(enum) do
+    var = to_var(key)
+    format_checks(properties, [required(key) | required], checks ++ quote do
+      ({unquote(key), unquote(var)}) when unquote(var) in unquote(enum) ->
+        true
+    end)
+  end
+
+  defp required(key) do
+    {key, Macro.var(:_, nil)}
+  end
+
+  defp types_to_check(types, key) do
     key = key |> to_var()
     types
     |> Enum.map(&(type_to_check(&1, key)))
