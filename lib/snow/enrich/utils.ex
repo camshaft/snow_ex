@@ -12,6 +12,8 @@ defmodule Snow.Enrich.Utils do
   def explode(event = %{data: data}) do
     data
     |> Enum.map(fn
+      ({key, []}) ->
+        {key, [nil]}
       ({key, value}) when is_list(value) ->
         {key, value}
       ({key, value}) ->
