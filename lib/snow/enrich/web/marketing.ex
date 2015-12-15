@@ -8,11 +8,8 @@ defmodule Snow.Enrich.Web.Marketing do
   defp handle(%{page_url: %{query: query}} = payload) when not is_nil(query) do
     query
     |> URI.query_decoder()
-    |> Enum.reduce(%{}, &parse/2)
+    |> Enum.reduce(nil, &parse/2)
     |> context(payload)
-  catch
-    _, _ ->
-      payload
   end
   defp handle(payload) do
     payload
@@ -27,7 +24,7 @@ defmodule Snow.Enrich.Web.Marketing do
   term_nils = terms |> Dict.values |> Enum.map(&({&1, nil}))
   term_vars = terms |> Dict.values |> Enum.map(&({&1, Macro.var(&1, nil)}))
 
-  defp context(%{unquote_splicing(term_nils)}, payload) do
+  defp context(nil, payload) do
     payload
   end
   defp context(%{unquote_splicing(term_vars)}, payload) do
@@ -35,11 +32,18 @@ defmodule Snow.Enrich.Web.Marketing do
   end
 
   for {from, to} <- terms do
+    defp parse({unquote(to_string(from)), value}, nil) do
+      Map.put(empty, unquote(to), value)
+    end
     defp parse({unquote(to_string(from)), value}, acc) do
-      Map.put(acc, unquote(to_string(to)), value)
+      Map.put(acc, unquote(to), value)
     end
   end
   defp parse(_, acc) do
     acc
+  end
+
+  defp empty do
+    %{unquote_splicing(term_nils)}
   end
 end
