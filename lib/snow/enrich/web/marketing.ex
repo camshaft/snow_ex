@@ -35,6 +35,9 @@ defmodule Snow.Enrich.Web.Marketing do
   end
 
   for {from, to} <- terms do
+    defp parse({unquote(to_string(from)), ""}, acc) do
+      acc
+    end
     defp parse({unquote(to_string(from)), value}, nil) do
       Map.put(empty, unquote(to), value)
     end
