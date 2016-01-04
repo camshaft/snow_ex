@@ -83,16 +83,17 @@ defmodule Snow.Paths do
     data
     |> Enum.reduce(acc, fn
       ({key, value}, acc) when is_integer(value) ->
-        [quote do
-          unquote(Macro.var(:"_#{value}", nil)) = Map.get(unquote(parent), unquote(key))
-        end | acc]
+        [assign_key(parent, key, ivar(value)) | acc]
       ({key, value}, acc) when is_map(value) ->
         name = {parent, key} |> :erlang.phash2() |> ivar()
-        acc = [quote do
-          unquote(name) = Map.get(unquote(parent), unquote(key), %{})
-        end | acc]
-        extract_quoted(value, acc, name)
+        extract_quoted(value, [assign_key(parent, key, name, Macro.escape(%{})) | acc], name)
     end)
+  end
+
+  defp assign_key(parent, key, var, default \\ nil) do
+    quote do
+      unquote(var) = Map.get(unquote(parent), unquote(key)) || Map.get(unquote(parent), unquote(String.to_atom(key))) || unquote(default)
+    end
   end
 
   defp ivar(i) do
