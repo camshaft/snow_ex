@@ -21,6 +21,7 @@ defmodule Snow.Mixfile do
 
   defp deps do
     [
+      { :csv, "~> 1.1.5" },
       { :geolix, "~> 0.8" },
       { :httpoison, github: "edgurgel/httpoison", ref: "49ac32fa3f424b20749d55e86cffc37d55efc00a" },
       { :nile, "~> 0.1.0 "},

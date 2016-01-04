@@ -38,6 +38,12 @@ defmodule Snow.Enrich do
     |> __MODULE__.Serializer.JSON.exec()
   end
 
+  def to_csv(stream, paths, opts \\ []) do
+    stream
+    |> Snow.Payload.derived_contexts()
+    |> __MODULE__.Serializer.CSV.exec(paths, opts)
+  end
+
   def into(stream, factory) do
     stream
     |> Nile.route_into(&(&1), factory)
