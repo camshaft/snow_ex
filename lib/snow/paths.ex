@@ -1,6 +1,10 @@
 defmodule Snow.Paths do
   defmacro __using__(opts) do
-    matches = format(opts[:pattern] || "jsonpaths/*.json")
+    matches = (opts[:pattern] || "jsonpaths/*.json")
+    |> Code.eval_quoted([], __CALLER__)
+    |> elem(0)
+    |> format()
+
     quote do
       def match(name, data) do
         do_match(name, data)
