@@ -10,6 +10,9 @@ defmodule Snow.Paths do
         do_match(name, data)
       end
 
+      defp do_match("events", data) do
+        Snow.Model.Event.to_list(data)
+      end
       unquote_splicing(matches)
     end
   end

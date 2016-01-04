@@ -1,28 +1,25 @@
 defmodule Snow.Model.Event do
-            #https://github.com/snowplow/snowplow/wiki/canonical-event-model#211-application-fields
+  #https://github.com/snowplow/snowplow/wiki/canonical-event-model#211-application-fields
+  #https://github.com/snowplow/snowplow/wiki/canonical-event-model#212-date--time-fields
+  #https://github.com/snowplow/snowplow/wiki/canonical-event-model#213-event--transaction-fields
+  #https://github.com/snowplow/snowplow/wiki/canonical-event-model#214-snowplow-version-fields
   fields = [app_id: :string,
             platform: :string,
-            environment: :string,
-
-            #https://github.com/snowplow/snowplow/wiki/canonical-event-model#212-date--time-fields
+            etl_tstamp: :integer,
             collector_tstamp: :integer,
             dvce_created_tstamp: :integer,
-            dvce_sent_tstamp: :integer,
-            etl_tstamp: :integer,
-            derived_tstamp: :integer,
-            true_tstamp: :integer,
-
-            #https://github.com/snowplow/snowplow/wiki/canonical-event-model#213-event--transaction-fields
             event: :string,
             event_id: :string,
-
-            #https://github.com/snowplow/snowplow/wiki/canonical-event-model#214-snowplow-version-fields
+            name_tracker: :string,
             v_tracker: :string,
             v_collector: :string,
             v_etl: :string,
-            name_tracker: :string,
             etl_tags: :string,
-            derived_schemas: :string]
+            dvce_sent_tstamp: :integer,
+            derived_tstamp: :integer,
+            true_tstamp: :integer,
+            derived_schemas: :string,
+            environment: :string]
 
   defstruct Enum.map(fields, &({elem(&1, 0), nil}))
 
@@ -33,6 +30,14 @@ defmodule Snow.Model.Event do
 
   def from_payload(payload = %{unquote_splicing(field_vars)}) do
     %{payload | atomic_event: %__MODULE__{unquote_splicing([{:etl_tags, []} | field_vars])}}
+  end
+
+  list_vars = fields
+  |> Dict.keys()
+  |> Enum.map(&({&1, Macro.var(&1, nil)}))
+
+  def to_list(%__MODULE__{unquote_splicing(list_vars)}) do
+    unquote(Dict.values(list_vars))
   end
 
   use Dict
