@@ -38,6 +38,19 @@ defmodule Snow.Paths do
     |> Poison.encode!()
     |> escape()
   end
+  def escape(%{__struct__: _} = s) do
+    case String.Chars.impl_for(s) do
+      nil ->
+        s |> Poison.encode!() |> escape()
+      impl ->
+        s |> impl.to_string() |> escape()
+    end
+  end
+  def escape(v) when is_map(v) do
+    v
+    |> Poison.encode!()
+    |> escape()
+  end
   def escape(other) do
     other
     |> to_string()
