@@ -14,10 +14,32 @@ defmodule Snow.Paths do
       end
 
       defp do_match("events", data) do
-        Snow.Model.Event.to_list(data)
+        data
+        |> Snow.Model.Event.to_list()
+        |> Enum.map(&Snow.Paths.escape/1)
       end
       unquote_splicing(matches)
     end
+  end
+
+  def escape(nil) do
+    nil
+  end
+  def escape(value) when is_binary(value) do
+    [0, value, 0]
+  end
+  def escape([]) do
+    nil
+  end
+  def escape(value) when is_list(value) do
+    value
+    |> Poison.encode!()
+    |> escape()
+  end
+  def escape(other) do
+    other
+    |> to_string()
+    |> escape()
   end
 
   defp format(pattern) do
@@ -71,7 +93,11 @@ defmodule Snow.Paths do
     quote do
       defp do_match(unquote(name), unquote(root)) do
         unquote_splicing(extract_quoted(paths, root))
-        unquote(list |> Enum.map(&ivar/1))
+        unquote(Enum.map(list, fn(i) ->
+          quote do
+            Snow.Paths.escape(unquote(ivar(i)))
+          end
+        end))
       end
     end
   end
@@ -95,7 +121,7 @@ defmodule Snow.Paths do
 
   defp assign_key(parent, key, var, default \\ nil) do
     quote do
-      unquote(var) = Map.get(unquote(parent), unquote(key)) || unquote(default)
+      unquote(var) = Map.get(unquote(parent), unquote(key)) || Map.get(unquote(parent), unquote(String.to_atom(key))) || unquote(default)
     end
   end
 

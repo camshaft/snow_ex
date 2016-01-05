@@ -38,10 +38,10 @@ defmodule Snow.Enrich do
     |> __MODULE__.Serializer.JSON.exec()
   end
 
-  def to_csv(stream, paths, opts \\ []) do
+  def to_csv(stream, paths) do
     stream
     |> Snow.Payload.derived_contexts()
-    |> __MODULE__.Serializer.CSV.exec(paths, opts)
+    |> __MODULE__.Serializer.CSV.exec(paths)
   end
 
   def into(stream, factory) do
