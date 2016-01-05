@@ -114,16 +114,21 @@ defmodule Snow.Model.Context do
         "com.camshaft.snow.#{vendor}"
     end
   end
+
+  def to_map(%{schema: schema, data: data, parent: parent}) do
+    %{
+      "schema" => schema,
+      "data" => data,
+      "hierarchy" => Snow.Enrich.Utils.hierarchy(parent, schema[:name] || schema["name"])
+    }
+  end
 end
 
 defimpl Poison.Encoder, for: Snow.Model.Context do
   def encode(context, options) do
-    %{schema: schema, data: data, parent: parent} = context
-    Poison.encode!(%{
-      "schema" => schema,
-      "data" => data,
-      "hierarchy" => Snow.Enrich.Utils.hierarchy(parent, schema[:name] || schema["name"])
-    }, options)
+    context
+    |> Snow.Model.Context.to_map()
+    |> Poison.encode!(options)
   end
 end
 

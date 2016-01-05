@@ -6,6 +6,9 @@ defmodule Snow.Paths do
     |> format()
 
     quote do
+      def match(name, %Snow.Model.Context{} = model) do
+        match(name, Snow.Model.Context.to_map(model))
+      end
       def match(name, data) do
         do_match(name, data)
       end
@@ -92,7 +95,7 @@ defmodule Snow.Paths do
 
   defp assign_key(parent, key, var, default \\ nil) do
     quote do
-      unquote(var) = Map.get(unquote(parent), unquote(key)) || Map.get(unquote(parent), unquote(String.to_atom(key))) || unquote(default)
+      unquote(var) = Map.get(unquote(parent), unquote(key)) || unquote(default)
     end
   end
 

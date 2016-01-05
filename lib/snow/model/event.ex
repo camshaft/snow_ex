@@ -37,7 +37,24 @@ defmodule Snow.Model.Event do
   |> Enum.map(&({&1, Macro.var(&1, nil)}))
 
   def to_list(%__MODULE__{unquote_splicing(list_vars)}) do
-    unquote(Dict.values(list_vars))
+    unquote(Enum.map(list_vars, fn
+      ({key, var}) when key in [:etl_tags] ->
+        quote do
+          unquote(var) |> list_to_jsonstr()
+        end
+      ({_, var}) ->
+        var
+    end))
+  end
+
+  defp list_to_jsonstr([]) do
+    nil
+  end
+  defp list_to_jsonstr(list) when is_list(list) do
+    list |> Poison.encode!() |> :erlang.iolist_to_binary()
+  end
+  defp list_to_jsonstr(_) do
+    nil
   end
 
   use Dict
