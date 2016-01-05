@@ -46,6 +46,18 @@ defmodule Snow.Model.Event do
         var
     end))
   end
+  def to_list(map) when is_map(map) do
+    unquote(Enum.map(list_vars, fn
+      ({key, _}) when key in [:etl_tags] ->
+        quote do
+          (Map.get(var!(map), unquote(key)) || Map.get(var!(map), unquote(to_string(key)))) |> list_to_jsonstr()
+        end
+      ({key, _}) ->
+        quote do
+          (Map.get(var!(map), unquote(key)) || Map.get(var!(map), unquote(to_string(key))))
+        end
+    end))
+  end
 
   defp list_to_jsonstr([]) do
     nil

@@ -5,7 +5,17 @@ defmodule Snow.Paths do
     |> elem(0)
     |> format()
 
+    do_match_quoted = matches
+    |> Enum.map(&to_quoted/1)
+
+    names = matches
+    |> Enum.map(&elem(&1, 0))
+
     quote do
+      def list do
+        unquote(names)
+      end
+
       def match(name, %Snow.Model.Context{} = model) do
         match(name, Snow.Model.Context.to_map(model))
       end
@@ -20,7 +30,7 @@ defmodule Snow.Paths do
         |> Snow.Model.Event.to_list()
         |> Enum.map(&Snow.Paths.escape/1)
       end
-      unquote_splicing(matches)
+      unquote_splicing(do_match_quoted)
     end
   end
 
@@ -65,7 +75,6 @@ defmodule Snow.Paths do
     |> Stream.map(fn({name, %{"jsonpaths" => jsonpaths}}) ->
       {name, nest_paths(jsonpaths)}
     end)
-    |> Enum.map(&to_quoted/1)
   end
 
   defp read_file(file) do
