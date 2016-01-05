@@ -10,7 +10,9 @@ defmodule Snow.Paths do
         match(name, Snow.Model.Context.to_map(model))
       end
       def match(name, data) do
-        do_match(name, data)
+        name
+        |> String.downcase()
+        |> do_match(data)
       end
 
       defp do_match("events", data) do
