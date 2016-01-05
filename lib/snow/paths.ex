@@ -26,7 +26,7 @@ defmodule Snow.Paths do
     nil
   end
   def escape(value) when is_binary(value) do
-    [0, value, 0]
+    [8, value, 8]
   end
   def escape([]) do
     nil
