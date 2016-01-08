@@ -257,7 +257,7 @@ defmodule Snow.Payload do
         rescue
           Poison.SyntaxError ->
             put(payload, :derived_contexts, Snow.Model.BadRawEvent.syntax_error(decode_base64(value), payload))
-          Base64Exception ->
+          Snow.Payload.Base64Exception ->
             put(payload, :derived_contexts, Snow.Model.BadRawEvent.syntax_error(value, payload))
         end
       _ when is_list(type) ->
