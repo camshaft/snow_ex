@@ -257,6 +257,8 @@ defmodule Snow.Payload do
         rescue
           Poison.SyntaxError ->
             put(payload, :derived_contexts, Snow.Model.BadRawEvent.syntax_error(decode_base64(value), payload))
+          Base64Exception ->
+            put(payload, :derived_contexts, Snow.Model.BadRawEvent.syntax_error(value, payload))
         end
       _ when is_list(type) ->
         for {f, t} <- type do
@@ -275,6 +277,10 @@ defmodule Snow.Payload do
     value |> Poison.decode!()
   end
 
+  defmodule Base64Exception do
+    defexception [:message]
+  end
+
   defp decode_base64(value) do
     (case byte_size(value) |> rem(4) do
       0 -> value
@@ -283,6 +289,9 @@ defmodule Snow.Payload do
       3 -> value <> "="
     end)
     |> Base.url_decode64!()
+  rescue
+    ArgumentError ->
+      raise Base64Exception, message: value
   end
 
   use Dict
