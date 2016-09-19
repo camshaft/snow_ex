@@ -205,7 +205,7 @@ defmodule Snow.Payload do
         end
       :integer ->
         defp map({unquote(from_s), value}, payload) when is_binary(value) do
-          %{payload | unquote(to) => String.to_integer(value)}
+          %{payload | unquote(to) => to_integer(value)}
         rescue
           ArgumentError ->
             payload
@@ -215,7 +215,7 @@ defmodule Snow.Payload do
         end
       :float ->
         defp map({unquote(from_s), value}, payload) when is_binary(value) do
-          %{payload | unquote(to) => String.to_float(value)}
+          %{payload | unquote(to) => to_float(value)}
         rescue
           ArgumentError ->
             payload
@@ -241,7 +241,7 @@ defmodule Snow.Payload do
       :dimension ->
         for ws <- 1..5, hs <- 1..5 do
           defp map({unquote(from_s), <<w :: size(unquote(ws))-binary, "x", h :: size(unquote(hs))-binary>>}, payload) do
-            %{payload | unquote(to) => {String.to_integer(w), String.to_integer(h)}}
+            %{payload | unquote(to) => {to_integer(w), to_integer(h)}}
           end
         end
       :json ->
@@ -333,5 +333,35 @@ defmodule Snow.Payload do
     payload
     |> Map.delete(:__struct__)
     |> Enumerable.Map.reduce(acc, fun)
+  end
+
+  defp to_integer(str) when is_binary(str) do
+    String.to_integer(str)
+  rescue
+    ArgumentError ->
+      str
+      |> String.to_float()
+      |> trunc()
+  end
+  defp to_integer(i) when is_integer(i) do
+    i
+  end
+  defp to_integer(f) when is_float(f) do
+    trunc(f)
+  end
+
+  defp to_float(str) when is_binary(str) do
+    String.to_float(str)
+  rescue
+    ArgumentError ->
+      str
+      |> String.to_integer()
+      |> to_float()
+  end
+  defp to_float(i) when is_integer(i) do
+    i + 0.0
+  end
+  defp to_float(f) when is_float(f) do
+    f
   end
 end
