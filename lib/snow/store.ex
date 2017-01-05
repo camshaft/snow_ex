@@ -42,9 +42,9 @@ defmodule Snow.Store do
         {:ok, ts}
       end
 
-      if function_exported?(:erlang, :monotonic_time, 0) do
+      if function_exported?(:erlang, :timestamp, 0) do
         defp timestamp do
-          {mega, sec, micro} = :erlang.monotonic_time()
+          {mega, sec, micro} = :erlang.timestamp()
           mega * 1_000_000_000_000 + sec * 1_000_000 + micro
         end
       else
